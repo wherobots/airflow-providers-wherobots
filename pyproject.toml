@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "airflow-providers-wherobots"
+version = "0.1.0"
+description = ""
+authors = ["zongsi.zhang <krishnazongsi@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9, <3.13"
+wherobots-python-dbapi = {git = "https://github.com/wherobots/wherobots-python-dbapi-driver#v0.3.0"}
+
+[tool.poetry.group.dev.dependencies]
+apache-airflow = "^2.7.0"
+pytest = "^8.1.1"
+requests-mock = "^1.12.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
