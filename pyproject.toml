@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "airflow-providers-wherobots"
 version = "0.1.0"
-description = ""
-authors = ["zongsi.zhang <krishnazongsi@gmail.com>"]
+description = "Airflow extension for communicating with Wherobots Cloud"
+authors = ["zongsi.zhang <zongsi@wherobots.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
