@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9, <3.13"
-wherobots-python-dbapi = {git = "https://github.com/wherobots/wherobots-python-dbapi-driver", rev = "3025aaf"}
+wherobots-python-dbapi = {git = "https://github.com/wherobots/wherobots-python-dbapi-driver", tag = "v0.4.0"}
 
 [tool.poetry.group.dev.dependencies]
 apache-airflow = "^2.7.0"

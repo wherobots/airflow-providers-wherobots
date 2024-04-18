@@ -4003,7 +4003,7 @@ watchdog = ["watchdog (>=2.3)"]
 
 [[package]]
 name = "wherobots-python-dbapi"
-version = "0.3.1"
+version = "0.4.0"
 description = "Python DB-API driver for Wherobots DB"
 optional = false
 python-versions = "^3.9"
@@ -4022,8 +4022,8 @@ websockets = "^12.0"
 [package.source]
 type = "git"
 url = "https://github.com/wherobots/wherobots-python-dbapi-driver"
-reference = "3025aaf"
-resolved_reference = "3025aaf0e8499e45c8aeabf48a4b931120d3ed94"
+reference = "v0.4.0"
+resolved_reference = "53b87e8f01d87a67030c7b67834fa60e0b58639e"
 
 [[package]]
 name = "wrapt"
@@ -4242,4 +4242,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9, <3.13"
-content-hash = "92c4d4d714655da936e6f1c4e3f86a46a44e2bd01b6aa1986ad06bf66d6c8f6f"
+content-hash = "4ea6a19be5287896d694c7250d64eb87cc53aedd09f9f3fb7fd2cddb2037352d"
