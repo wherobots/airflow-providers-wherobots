@@ -1,6 +1,7 @@
-# Airflow Wherobots Provider
+# Airflow Providers for Wherobots
 
-Airflow Provider that integrates [wherobots cloud](https://wherobots.com/)'s computation features into your workflows.
+Airflow providers to bring [Wherobots Cloud](https://www.wherobots.com)'s
+spatial compute to your data workflows and ETLs.
 
 ## Installation
 
@@ -19,18 +20,42 @@ $ pip install git+https://github.com/wherobots/airflow-providers-wherobots
 
 ## Usage
 
-### Create Connection
-Create a connection first, the default wherobots connection name is `wherobots_default`.
-For any other name, please pass in the `wherobots_conn_id` parameter when initializing Wherobots Operators.
-Fill in the following fields in the connection detail page:
-1. Fill the wherobots API Service endpoint into the `Host` field
-2. Fill the personal API Token into the `Password` field
+### Create a connection
 
-### Execute SQL query
-You can use the `WherobotsSqlOperator` to run SQL queries on the Wherobots cloud.
-You can build your ETL jobs on Wherobots Catalogs.
-Check this [guidance](https://docs.wherobots.services/1.2.2/tutorials/sedonadb/vector-data/vector-load/) to learn how to **read data, transformation and write results by pure SQL in Wherobots Cloud**.  
-Below is an example dag that executes SQL query on Wherobots Cloud 
+You first need to create a Connection in Airflow. This can be done from
+the UI, or from the command-line. The default Wherobots connection name
+is `wherobots_default`; if you use another name you must specify that
+name with the `wherobots_conn_id` parameter when initializing Wherobots
+operators.
+
+The only required fields for the connection are:
+- the Wherobots API endpoint in the `host` field;
+- your Wherobots API key in the `password` field.
+
+```
+$ airflow connections add "wherobots_default" \
+    --conn-type "wherobots" \
+    --conn-host "api.cloud.wherobots.com" \
+    --conn-password "$(< api.key)"
+```
+
+### Execute a SQL query
+
+The `WherobotsSqlOperator` allows you to run SQL queries on the
+Wherobots cloud, from which you can build your ETLs and data
+transformation workflows by querying, manipulating, and producing
+datasets with WherobotsDB.
+
+Refer to the [Wherobots Documentation](https://docs.wherobots.com) and
+this [guidance](https://docs.wherobots.services/1.2.2/tutorials/sedonadb/vector-data/vector-load/)
+to learn how to read data, transform data, and write results in Spatial
+SQL with WherobotsDB.
+
+## Example
+
+Below is an example Airflow DAG that executes a SQL query on Wherobots
+Cloud:
+
 ```python
 import datetime
 
@@ -40,20 +65,19 @@ from airflow_providers_wherobots.operators.sql import WherobotsSqlOperator
 
 with DAG(
     dag_id="example_wherobots_sql_dag",
-    start_date=datetime.datetime(2024, 1, 1),
+    start_date=datetime.datetime.date(datetime.datetime.now()),
     schedule="@hourly",
     catchup=False
 ):
-    # operator = PythonOperator(task_id="print_the_context", python_callable=print_context)
+    # Create a `wherobots.test.airflow_example` table with 100 records
+    # from the OMF `places_place` dataset.
     operator = WherobotsSqlOperator(
         task_id="execute_query",
         sql=f"""
-        INSERT INTO
-            wherobots.test_db.example_geom
-        SELECT
-            id, geometry, confidence, geohash
-        FROM
-            wherobots_open_data.overture.places_place
+        INSERT INTO wherobots.test.airflow_example
+        SELECT id, geometry, confidence, geohash
+        FROM wherobots_open_data.overture.places_place
+        LIMIT 100
         """,
         return_last=False,
     )
