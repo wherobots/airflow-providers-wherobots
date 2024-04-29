@@ -6,22 +6,9 @@ on:
 
 jobs:
   pypi-publish:
-    name: Upload release to PyPI
-    runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/airflow-providers-wherobots
-    permissions:
-      id-token: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-      - name: Poetry Build
-        run: |
-          poetry build
-      - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+    name: Publish package to Pypi
+    uses: wherobots/ci-tools/.github/workflows/publish-pypi.yaml@main
+    with:
+      pypi_repo_name: airflow-providers-wherobots
+      python_version: 3.9
+    secrets: inherit
