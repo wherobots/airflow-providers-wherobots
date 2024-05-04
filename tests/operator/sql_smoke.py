@@ -16,7 +16,7 @@ if __name__ == "__main__":
     parser.add_argument("sql", help="SQL query to execute")
     args = parser.parse_args()
     test_conn = Connection(
-        conn_type="http", host="api.staging.wherobots.services", password=args.api_key
+        conn_type="http", host="api.staging.wherobots.com", password=args.api_key
     )
     test_conn_uri = test_conn.get_uri()
     os.environ["AIRFLOW_CONN_TEST_CONN"] = test_conn_uri

@@ -47,7 +47,7 @@ transformation workflows by querying, manipulating, and producing
 datasets with WherobotsDB.
 
 Refer to the [Wherobots Documentation](https://docs.wherobots.com) and
-this [guidance](https://docs.wherobots.services/1.2.2/tutorials/sedonadb/vector-data/vector-load/)
+this [guidance](https://docs.wherobots.com/1.2.2/tutorials/sedonadb/vector-data/vector-load/)
 to learn how to read data, transform data, and write results in Spatial
 SQL with WherobotsDB.
 
