@@ -4,6 +4,8 @@ Operator for firing sql queries and collect results to s3
 
 from __future__ import annotations
 
+from typing import Sequence
+
 from airflow.providers.common.sql.hooks.sql import DbApiHook
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from wherobots.db import Runtime
@@ -29,6 +31,10 @@ def wherobots_default_handler(cursor: WDbCursor) -> DataFrame | None:
 
 
 class WherobotsSqlOperator(SQLExecuteQueryOperator):  # type: ignore[misc]
+
+    template_fields: Sequence[str] = SQLExecuteQueryOperator.template_fields
+    template_fields_renderers = {"sql": "sql"}
+    conn_id_field = "wherobots_conn_id"
 
     def __init__(  # type: ignore[no-untyped-def]
         self,
