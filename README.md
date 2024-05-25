@@ -9,13 +9,13 @@ If you use [Poetry](https://python-poetry.org) in your project, add the
 dependency with `poetry add`:
 
 ```
-$ poetry add git+https://github.com/wherobots/airflow-providers-wherobots
+$ poetry add airflow-providers-wherobots
 ```
 
 Otherwise, just `pip install` it:
 
 ```
-$ pip install git+https://github.com/wherobots/airflow-providers-wherobots
+$ pip install airflow-providers-wherobots
 ```
 
 ## Usage
@@ -34,7 +34,7 @@ The only required fields for the connection are:
 
 ```
 $ airflow connections add "wherobots_default" \
-    --conn-type "wherobots" \
+    --conn-type "generic" \
     --conn-host "api.cloud.wherobots.com" \
     --conn-password "$(< api.key)"
 ```
@@ -47,9 +47,12 @@ transformation workflows by querying, manipulating, and producing
 datasets with WherobotsDB.
 
 Refer to the [Wherobots Documentation](https://docs.wherobots.com) and
-this [guidance](https://docs.wherobots.com/1.2.2/tutorials/sedonadb/vector-data/vector-load/)
+this [guidance](https://docs.wherobots.com/latest/tutorials/sedonadb/vector-data/vector-load/)
 to learn how to read data, transform data, and write results in Spatial
 SQL with WherobotsDB.
+
+Refer to the [Wherobots Apache Airflow Provider Documentation](https://docs.wherobots.com/latest/develop/airflow-provider)
+to get more detailed guidance about how to use the Wherobots Apache Airflow Provider.
 
 ## Example
 
