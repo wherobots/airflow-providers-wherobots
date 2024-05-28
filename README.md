@@ -68,7 +68,7 @@ from airflow_providers_wherobots.operators.sql import WherobotsSqlOperator
 
 with DAG(
     dag_id="example_wherobots_sql_dag",
-    start_date=datetime.datetime.date(datetime.datetime.now()),
+    start_date=datetime.datetime.now(),
     schedule="@hourly",
     catchup=False
 ):
