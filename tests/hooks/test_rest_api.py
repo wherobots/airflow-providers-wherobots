@@ -1,0 +1,96 @@
+"""
+Test the REST API hooks.
+"""
+
+import json
+from http import HTTPStatus
+
+import requests
+import responses
+from pydantic import TypeAdapter, BaseModel
+from pytest_mock import MockerFixture
+from responses import matchers
+
+from airflow_providers_wherobots.hooks.rest_api import (
+    WherobotsAuth,
+    WherobotsRestAPIHook,
+)
+from airflow_providers_wherobots.wherobots.models import Run
+from tests import helpers
+
+
+@responses.activate
+def test_wherobots_auth() -> None:
+    """
+    Test the WherobotsAuth class inject the Bearer Authorization header properly
+    """
+    auth = WherobotsAuth("api_key")
+    responses.get(
+        url="https://example.com",
+        status=HTTPStatus.OK,
+        match=[matchers.header_matcher({"X-API-Key": "api_key"})],
+    )
+    with requests.session() as session:
+        resp = session.get("https://example.com", auth=auth)
+        assert resp.status_code == HTTPStatus.OK
+
+
+class TestModel(BaseModel):
+    key: str
+
+
+class TestWherobotsRestAPIHook:
+    """
+    Test the WherobotsRestAPIHook class
+    """
+
+    def test_context_manager(self, mocker: MockerFixture) -> None:
+        """
+        Test the context manager
+        """
+        with WherobotsRestAPIHook() as hook:
+            mock_session_close = mocker.patch.object(hook.session, "close")
+        mock_session_close.assert_called_once()
+
+    @responses.activate
+    def test_api_call(self, test_default_conn) -> None:
+        """
+        Test the _api_call method
+        """
+        url = f"https://{test_default_conn.host}/test"
+        responses.add(
+            responses.GET,
+            url,
+            json={"key": "value"},
+            status=HTTPStatus.OK,
+        )
+        with WherobotsRestAPIHook() as hook:
+            test_resp_json = hook._api_call("GET", "/test")
+            test_model = TestModel.model_validate(test_resp_json)
+            assert test_model.key == "value"
+            assert len(responses.calls) == 1
+            assert responses.calls[0].request.url == url
+            assert (
+                responses.calls[0].request.headers["X-API-Key"]
+                == test_default_conn.password
+            )
+
+    @responses.activate
+    def test_get_run(self, test_default_conn) -> None:
+        """
+        Test the get_run method
+        """
+        test_run: Run = helpers.run_factory.build()
+        url = f"https://{test_default_conn.host}/runs/{test_run.ext_id}"
+        payload: dict = json.loads(test_run.model_dump_json())
+        payload.update({"extra_field": "random"})
+        responses.add(
+            responses.GET,
+            url,
+            json=payload,
+            status=HTTPStatus.OK,
+        )
+        with WherobotsRestAPIHook() as hook:
+            fetched_run = hook.get_run(test_run.ext_id)
+            assert fetched_run.ext_id == test_run.ext_id
+            assert fetched_run.status == test_run.status

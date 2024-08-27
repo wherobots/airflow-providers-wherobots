@@ -16,7 +16,7 @@ from wherobots.db.constants import (
     DEFAULT_READ_TIMEOUT_SECONDS,
 )
 
-from airflow_providers_wherobots.hooks.wherobots import DEFAULT_CONN_ID
+from airflow_providers_wherobots.hooks.base import DEFAULT_CONN_ID
 
 log = logging.getLogger(__name__)
 

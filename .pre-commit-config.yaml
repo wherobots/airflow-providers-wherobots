@@ -1,10 +1,19 @@
 fail_fast: true
 
 repos:
-  - repo: https://github.com/ambv/black
-    rev: 24.2.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.4.10
     hooks:
-      - id: black
+      # Run the linter.
+      - id: ruff
+        stages: [ pre-commit ]
+        args: [ --fix ]
+        files: ^airflow_providers_wherobots/
+      # Run the formatter.
+      - id: ruff-format
+        stages: [ pre-commit ]
+        files: ^airflow_providers_wherobots/
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.7.0
@@ -12,7 +21,8 @@ repos:
       - id: mypy
         exclude: ^tests/
         verbose: true
-        args: [--strict, --ignore-missing-imports]
+        args: [--ignore-missing-imports]
+        additional_dependencies: ['types-requests']
         entry: mypy
 
   - repo: https://github.com/compilerla/conventional-pre-commit
