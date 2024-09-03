@@ -78,7 +78,7 @@ class WherobotsRestAPIHook(BaseHook):
         resp_json = self._api_call(
             "POST",
             "/runs",
-            payload=payload.model_dump(),
+            payload=payload.model_dump(mode="json"),
         )
         return Run.model_validate(resp_json)
 

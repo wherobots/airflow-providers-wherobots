@@ -4,7 +4,7 @@ The data models for the Wherobots API
 
 import string
 from datetime import datetime
-from enum import auto, Enum
+from enum import auto
 from typing import Optional, Sequence
 
 from pydantic import BaseModel, Field, ConfigDict, computed_field
@@ -14,7 +14,7 @@ from wherobots.db import Runtime
 RUN_NAME_ALPHABET = string.ascii_letters + string.digits + "-_."
 
 
-class RunStatus(str, Enum):
+class RunStatus(StrEnum):
     PENDING = auto()
     RUNNING = auto()
     FAILED = auto()
