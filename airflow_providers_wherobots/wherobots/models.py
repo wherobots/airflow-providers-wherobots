@@ -4,7 +4,7 @@ The data models for the Wherobots API
 
 import string
 from datetime import datetime
-from enum import auto, Enum
+from enum import auto
 from typing import Optional, Sequence
 
 from pydantic import BaseModel, Field, ConfigDict, computed_field
@@ -14,7 +14,7 @@ from wherobots.db import Runtime
 RUN_NAME_ALPHABET = string.ascii_letters + string.digits + "-_."
 
 
-class RunStatus(str, Enum):
+class RunStatus(StrEnum):
     PENDING = auto()
     RUNNING = auto()
     FAILED = auto()
@@ -49,9 +49,9 @@ class PythonRunPayload(BaseModel):
         ("uri", "args", "entrypoint"), exclude=True, init=False
     )
 
-    uri: str = Field(..., alias="uri")
+    uri: str
     args: list[str] = []
-    entrypoint: Optional[str] = Field(None, alias="entrypoint")
+    entrypoint: Optional[str] = None
 
     @classmethod
     def create(cls, uri: str, args: list[str], entrypoint: Optional[str] = None):
@@ -64,15 +64,15 @@ class JavaRunPayload(BaseModel):
     """
 
     # For airflow to render the template fields
-    template_fields: Sequence[str] = Field(("uri", "args", "mainClass"), exclude=True)
+    template_fields: Sequence[str] = Field(("uri", "args", "main_class"), exclude=True)
 
-    uri: str = Field(..., alias="uri")
+    uri: str
     args: list[str] = []
-    mainClass: Optional[str] = Field(None, alias="mainClass")
+    main_class: Optional[str] = Field(None, alias="mainClass")
 
     @classmethod
-    def create(cls, uri: str, args: list[str], mainClass: Optional[str] = None):
-        return cls(uri=uri, args=args, mainClass=mainClass)
+    def create(cls, uri: str, args: list[str], main_class: Optional[str] = None):
+        return cls(uri=uri, args=args, mainClass=main_class)
 
 
 class RunType(StrEnum):
@@ -88,6 +88,7 @@ class CreateRunPayload(BaseModel):
     name: Optional[str] = None
     python: Optional[PythonRunPayload] = None
     java: Optional[JavaRunPayload] = None
+    timeout_seconds: int = Field(3600, alias="timeoutSeconds")
 
     @computed_field
     def type(self) -> RunType:
@@ -102,5 +103,12 @@ class CreateRunPayload(BaseModel):
         name: str,
         python: Optional[PythonRunPayload] = None,
         java: Optional[JavaRunPayload] = None,
+        timeout_seconds: int = 3600,
     ):
-        return cls(runtime=runtime, name=name, python=python, java=java)
+        return cls(
+            runtime=runtime,
+            name=name,
+            python=python,
+            java=java,
+            timeoutSeconds=timeout_seconds,
+        )

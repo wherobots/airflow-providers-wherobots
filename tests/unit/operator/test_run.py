@@ -3,8 +3,6 @@ Test the operators in run module
 """
 
 import datetime
-import uuid
-from typing import Any, Optional
 from unittest.mock import MagicMock
 
 import pendulum
@@ -13,7 +11,7 @@ from airflow import DAG
 from airflow.models import DagRun
 from airflow.utils.state import DagRunState
 from airflow.utils.types import DagRunType
-from pytest_mock import MockerFixture, mocker
+from pytest_mock import MockerFixture
 
 from airflow_providers_wherobots.operators.run import WherobotsRunOperator
 from airflow_providers_wherobots.wherobots.models import (
@@ -21,63 +19,59 @@ from airflow_providers_wherobots.wherobots.models import (
     RunStatus,
     CreateRunPayload,
 )
-from tests.helpers import run_factory
+from tests.unit.helpers import run_factory
+
+DEFAULT_START = pendulum.datetime(2021, 9, 13, tz="UTC")
+DEFAULT_END = DEFAULT_START + datetime.timedelta(days=1)
+
+TEST_DAG_ID = "test_run_operator"
+TEST_TASK_ID = "run_operator"
 
 
-def execute_run_operator(
-    create_operator_kwargs: dict[str, Any],
-    start: datetime = datetime.datetime(2021, 9, 13, 0, 0, 0),
-    dag_id: Optional[str] = None,
-    task_id: Optional[str] = "test_run_operator",
-):
-    end = start + datetime.timedelta(days=1)
-    if not dag_id:
-        # generate a random dag name to avoid duplicate in the same test case
-        dag_id = f"test_run_operator_{uuid.uuid4()}"
+@pytest.fixture()
+def dag():
     with DAG(
-        dag_id=dag_id,
+        dag_id=TEST_DAG_ID,
         schedule="@daily",
-        start_date=start,
+        start_date=DEFAULT_START,
     ) as dag:
-        operator = WherobotsRunOperator(
-            task_id=task_id,
-            dag=dag,
-            **create_operator_kwargs,
-        )
-        dag_run: DagRun = dag.create_dagrun(
-            state=DagRunState.RUNNING,
-            execution_date=start,
-            data_interval=(start, end),
-            start_date=start,
-            run_type=DagRunType.MANUAL,
-        )
-        ti = dag_run.get_task_instance(task_id=task_id)
-        ti.task = dag.get_task(task_id=task_id)
-        ti.run(ignore_ti_state=True)
-        return operator
+        yield dag
+
+
+def execute_dag(dag: DAG, task_id: str, start=DEFAULT_START, end=DEFAULT_END):
+    dag_run: DagRun = dag.create_dagrun(
+        state=DagRunState.RUNNING,
+        execution_date=start,
+        data_interval=(start, end),
+        start_date=start,
+        run_type=DagRunType.MANUAL,
+    )
+    ti = dag_run.get_task_instance(task_id=task_id)
+    ti.task = dag.get_task(task_id=task_id)
+    ti.run(ignore_ti_state=True)
+    return ti
 
 
 class TestWherobotsRunOperator:
 
     @pytest.mark.usefixtures("clean_airflow_db")
-    def test_render_template(self, mocker: MockerFixture):
+    def test_render_template(self, mocker: MockerFixture, dag: DAG):
         data_interval_start = pendulum.datetime(2021, 9, 13, tz="UTC")
         create_run: MagicMock = mocker.patch(
             "airflow_providers_wherobots.hooks.rest_api.WherobotsRestAPIHook.create_run",
             return_value=run_factory.build(status=RunStatus.COMPLETED),
         )
-        execute_run_operator(
-            {
-                "name": "test_run_{{ ds }}",
-                "python": PythonRunPayload(
-                    uri="s3://bucket/test-{{ ds }}.py",
-                    args=["{{ ds }}"],
-                    entrypoint="src.main_{{ ds }}",
-                ),
-            },
-            start=data_interval_start,
+        operator = WherobotsRunOperator(
             task_id="test_render_template_python",
+            name="test_run_{{ ds }}",
+            python=PythonRunPayload(
+                uri="s3://bucket/test-{{ ds }}.py",
+                args=["{{ ds }}"],
+                entrypoint="src.main_{{ ds }}",
+            ),
+            dag=dag,
         )
+        execute_dag(dag, task_id=operator.task_id)
         assert create_run.call_count == 1
         rendered_payload = create_run.call_args.args[0]
         assert isinstance(rendered_payload, CreateRunPayload)
@@ -88,22 +82,18 @@ class TestWherobotsRunOperator:
         assert rendered_payload.python.entrypoint == f"src.main_{expected_ds}"
 
     @pytest.mark.usefixtures("clean_airflow_db")
-    def test_default_name(self, mocker: MockerFixture):
+    def test_default_name(self, mocker: MockerFixture, dag: DAG):
         data_interval_start = pendulum.datetime(2021, 9, 13, tz="UTC")
         create_run: MagicMock = mocker.patch(
             "airflow_providers_wherobots.hooks.rest_api.WherobotsRestAPIHook.create_run",
             return_value=run_factory.build(status=RunStatus.COMPLETED),
         )
-        operator = execute_run_operator(
-            {
-                "python": PythonRunPayload(
-                    uri="", args=[]
-                ),
-            },
-            start=data_interval_start,
-            task_id="run_operator",
-            dag_id="test_default_name",
+        operator = WherobotsRunOperator(
+            task_id="test_default_name",
+            python=PythonRunPayload(uri=""),
+            dag=dag,
         )
+        execute_dag(dag, task_id=operator.task_id)
         rendered_payload = create_run.call_args.args[0]
         assert isinstance(rendered_payload, CreateRunPayload)
         assert rendered_payload.name == operator.default_run_name.replace("{{ ts_nodash }}", data_interval_start.strftime("%Y%m%dT%H%M%S"))

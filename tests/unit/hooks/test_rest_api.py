@@ -7,16 +7,17 @@ from http import HTTPStatus
 
 import requests
 import responses
-from pydantic import TypeAdapter, BaseModel
+from pydantic import BaseModel
 from pytest_mock import MockerFixture
 from responses import matchers
+from wherobots.db import Runtime
 
 from airflow_providers_wherobots.hooks.rest_api import (
     WherobotsAuth,
     WherobotsRestAPIHook,
 )
-from airflow_providers_wherobots.wherobots.models import Run
-from tests import helpers
+from airflow_providers_wherobots.wherobots.models import Run, CreateRunPayload, PythonRunPayload
+from tests.unit import helpers
 
 
 @responses.activate
@@ -94,3 +95,29 @@ class TestWherobotsRestAPIHook:
             fetched_run = hook.get_run(test_run.ext_id)
             assert fetched_run.ext_id == test_run.ext_id
             assert fetched_run.status == test_run.status
+
+    @responses.activate
+    def test_create_run(self, test_default_conn) -> None:
+        """
+        Test the get_run method
+        """
+        test_run: Run = helpers.run_factory.build()
+        url = f"https://{test_default_conn.host}/runs"
+        create_payload = CreateRunPayload.create(
+            name=test_run.name,
+            runtime=Runtime.SEDONA,
+            python=PythonRunPayload(
+                uri="s3://bucket/test.py",
+                args=["arg1", "arg2"],
+                entrypoint="src.main",
+            ),
+        )
+        responses.add(
+            responses.POST,
+            url,
+            json=test_run.model_dump(mode="json"),
+            match=[matchers.json_params_matcher(create_payload.model_dump(mode="json"))],
+            status=HTTPStatus.OK,
+        )
+        with WherobotsRestAPIHook() as hook:
+            hook.create_run(payload=create_payload)

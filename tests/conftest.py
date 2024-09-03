@@ -5,6 +5,7 @@ shared helper functions for tests
 import os
 
 import pytest
+from airflow import DAG
 from airflow.models import Connection
 from pytest_mock import MockerFixture
 
@@ -23,3 +24,6 @@ def test_default_conn(mocker: MockerFixture):
 @pytest.fixture(scope="function")
 def clean_airflow_db():
     os.system("airflow db reset --yes")
+
+
+
