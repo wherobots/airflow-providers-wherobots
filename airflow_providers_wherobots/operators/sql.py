@@ -17,7 +17,7 @@ from wherobots.db import Cursor as WDbCursor
 from pandas.core.frame import DataFrame
 
 from airflow_providers_wherobots.hooks.sql import WherobotsSqlHook
-from airflow_providers_wherobots.hooks.wherobots import DEFAULT_CONN_ID
+from airflow_providers_wherobots.hooks.base import DEFAULT_CONN_ID
 
 
 def wherobots_default_handler(cursor: WDbCursor) -> DataFrame | None:
@@ -31,7 +31,6 @@ def wherobots_default_handler(cursor: WDbCursor) -> DataFrame | None:
 
 
 class WherobotsSqlOperator(SQLExecuteQueryOperator):  # type: ignore[misc]
-
     template_fields: Sequence[str] = SQLExecuteQueryOperator.template_fields
     template_fields_renderers = {"sql": "sql"}
     conn_id_field = "wherobots_conn_id"
