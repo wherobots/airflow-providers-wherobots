@@ -16,8 +16,13 @@ from airflow_providers_wherobots.hooks.rest_api import (
     WherobotsAuth,
     WherobotsRestAPIHook,
 )
-from airflow_providers_wherobots.wherobots.models import Run, CreateRunPayload, PythonRunPayload
-from tests.unit import helpers
+from airflow_providers_wherobots.wherobots.models import (
+    Run,
+    CreateRunPayload,
+    PythonRunPayload,
+    LogsResponse,
+)
+from tests.unit_tests import helpers
 
 
 @responses.activate
@@ -66,7 +71,7 @@ class TestWherobotsRestAPIHook:
             status=HTTPStatus.OK,
         )
         with WherobotsRestAPIHook() as hook:
-            test_resp_json = hook._api_call("GET", "/test")
+            test_resp_json = hook._api_call("GET", "/test").json()
             test_model = TestModel.model_validate(test_resp_json)
             assert test_model.key == "value"
             assert len(responses.calls) == 1
@@ -116,8 +121,44 @@ class TestWherobotsRestAPIHook:
             responses.POST,
             url,
             json=test_run.model_dump(mode="json"),
-            match=[matchers.json_params_matcher(create_payload.model_dump(mode="json"))],
+            match=[
+                matchers.json_params_matcher(create_payload.model_dump(mode="json"))
+            ],
             status=HTTPStatus.OK,
         )
         with WherobotsRestAPIHook() as hook:
             hook.create_run(payload=create_payload)
+
+    @responses.activate
+    def test_get_run_logs(self, test_default_conn) -> None:
+        """
+        Test the get_run method
+        """
+        test_run: Run = helpers.run_factory.build()
+        url = f"https://{test_default_conn.host}/runs/{test_run.ext_id}/logs"
+        responses.add(
+            responses.GET,
+            url,
+            json=LogsResponse(items=[], current_page=12345, next_page=None).model_dump(
+                mode="json"
+            ),
+            match=[matchers.query_param_matcher({"cursor": 12345, "size": 500})],
+            status=HTTPStatus.OK,
+        )
+        with WherobotsRestAPIHook() as hook:
+            hook.get_run_logs(run_id=test_run.ext_id, start=12345)
+
+    @responses.activate
+    def test_cancel_run(self, test_default_conn) -> None:
+        """
+        Test the cancel_run method
+        """
+        test_run: Run = helpers.run_factory.build()
+        url = f"https://{test_default_conn.host}/runs/{test_run.ext_id}/cancel"
+        responses.add(
+            responses.POST,
+            url,
+            status=HTTPStatus.OK,
+        )
+        with WherobotsRestAPIHook() as hook:
+            hook.cancel_run(run_id=test_run.ext_id)

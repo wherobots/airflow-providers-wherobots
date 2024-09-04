@@ -8,12 +8,16 @@ from typing import Any, Optional
 import requests
 from airflow.hooks.base import BaseHook
 from airflow.models import Connection
-from requests import PreparedRequest
+from requests import PreparedRequest, Response
 from requests.adapters import HTTPAdapter, Retry
 from requests.auth import AuthBase
 
 from airflow_providers_wherobots.hooks.base import DEFAULT_CONN_ID
-from airflow_providers_wherobots.wherobots.models import Run, CreateRunPayload
+from airflow_providers_wherobots.wherobots.models import (
+    Run,
+    CreateRunPayload,
+    LogsResponse,
+)
 
 
 class WherobotsAuth(AuthBase):
@@ -63,15 +67,18 @@ class WherobotsRestAPIHook(BaseHook):
         method: str,
         endpoint: str,
         payload: Optional[dict[str, Any]] = None,
-    ) -> Any:
+        params: Optional[dict[str, Any]] = None,
+    ) -> Response:
         auth = WherobotsAuth(self.conn.password)
         url = "https://" + self.conn.host.rstrip("/") + endpoint
-        resp = self.session.request(url=url, method=method, json=payload, auth=auth)
+        resp = self.session.request(
+            url=url, method=method, json=payload, auth=auth, params=params
+        )
         resp.raise_for_status()
-        return resp.json()
+        return resp
 
     def get_run(self, run_id: str) -> Run:
-        resp_json = self._api_call("GET", f"/runs/{run_id}")
+        resp_json = self._api_call("GET", f"/runs/{run_id}").json()
         return Run.model_validate(resp_json)
 
     def create_run(self, payload: CreateRunPayload) -> Run:
@@ -79,8 +86,13 @@ class WherobotsRestAPIHook(BaseHook):
             "POST",
             "/runs",
             payload=payload.model_dump(mode="json"),
-        )
+        ).json()
         return Run.model_validate(resp_json)
 
     def cancel_run(self, run_id: str) -> None:
         self._api_call("POST", f"/runs/{run_id}/cancel")
+
+    def get_run_logs(self, run_id: str, start: int, size: int = 500) -> LogsResponse:
+        params = {"cursor": start, "size": size}
+        resp_json = self._api_call("GET", f"/runs/{run_id}/logs", params=params).json()
+        return LogsResponse.model_validate(resp_json)

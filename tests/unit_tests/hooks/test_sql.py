@@ -12,7 +12,6 @@ from airflow_providers_wherobots.hooks.sql import WherobotsSqlHook
 
 
 class TestWherobotsSqlHook:
-
     @mock.patch("airflow_providers_wherobots.hooks.sql.connect")
     def test_get_conn(self, mock_connect: MagicMock, test_default_conn: Connection):
         # Instantiate hook

@@ -1,9 +1,14 @@
 """
 Test module wherobots.models
 """
+
 from wherobots.db import Runtime
 
-from airflow_providers_wherobots.wherobots.models import CreateRunPayload, PythonRunPayload, JavaRunPayload
+from airflow_providers_wherobots.wherobots.models import (
+    CreateRunPayload,
+    PythonRunPayload,
+    JavaRunPayload,
+)
 
 
 def test_create_run_payload():
