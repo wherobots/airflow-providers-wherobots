@@ -145,7 +145,7 @@ class TestWherobotsRunOperator:
         test_item: Tuple[list[Run], TaskInstanceState],
     ):
         get_run_results, task_state = test_item
-        mocker.patch(
+        mocked_create_run = mocker.patch(
             "airflow_providers_wherobots.hooks.rest_api.WherobotsRestAPIHook.create_run",
             return_value=run_factory.build(status=RunStatus.PENDING),
         )
@@ -171,6 +171,9 @@ class TestWherobotsRunOperator:
         except Exception as e:
             assert isinstance(e, RuntimeError)
         assert ti.state == task_state
+        # test xcom push
+        if task_state == TaskInstanceState.SUCCESS:
+            assert ti.xcom_pull(key="run_id") == mocked_create_run.return_value.ext_id
 
     def test_on_kill(
         self,
