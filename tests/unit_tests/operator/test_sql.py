@@ -19,7 +19,6 @@ def mock_wherobots_db_connection():
 
 
 class TestWherobotsSqlOperator:
-
     @mock.patch(
         "airflow_providers_wherobots.hooks.sql.connect",
         return_value=mock_wherobots_db_connection(),

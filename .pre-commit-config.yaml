@@ -9,11 +9,9 @@ repos:
       - id: ruff
         stages: [ pre-commit ]
         args: [ --fix ]
-        files: ^airflow_providers_wherobots/
       # Run the formatter.
       - id: ruff-format
         stages: [ pre-commit ]
-        files: ^airflow_providers_wherobots/
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.7.0

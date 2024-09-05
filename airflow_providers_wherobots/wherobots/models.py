@@ -5,7 +5,7 @@ The data models for the Wherobots API
 import string
 from datetime import datetime
 from enum import auto
-from typing import Optional, Sequence
+from typing import Optional, Sequence, List
 
 from pydantic import BaseModel, Field, ConfigDict, computed_field
 from strenum import StrEnum
@@ -112,3 +112,14 @@ class CreateRunPayload(BaseModel):
             java=java,
             timeoutSeconds=timeout_seconds,
         )
+
+
+class LogItem(BaseModel):
+    timestamp: int
+    raw: str
+
+
+class LogsResponse(BaseModel):
+    items: List[LogItem]
+    current_page: int
+    next_page: Optional[int] = None

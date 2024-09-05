@@ -13,7 +13,7 @@ from airflow_providers_wherobots.operators.run import WherobotsRunOperator
 from airflow_providers_wherobots.wherobots.models import (
     PythonRunPayload,
 )
-from tests.unit.operator.test_run import dag, execute_dag
+from tests.unit_tests.operator.test_run import execute_dag
 
 DEFAULT_START = pendulum.datetime(2021, 9, 13, tz="UTC")
 DEFAULT_END = DEFAULT_START + datetime.timedelta(days=1)
