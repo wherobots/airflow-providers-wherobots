@@ -2,11 +2,12 @@
 Define the Operators for triggering and monitoring the execution of Wherobots Run
 """
 
-from enum import auto, Enum
+from enum import auto
 from time import sleep
 from typing import Optional, Sequence, Any
 
 from airflow.models import BaseOperator
+from strenum import StrEnum
 from wherobots.db import Runtime
 
 from airflow_providers_wherobots.hooks.base import DEFAULT_CONN_ID
@@ -21,7 +22,7 @@ from airflow_providers_wherobots.wherobots.models import (
 )
 
 
-class XComKey(str, Enum):
+class XComKey(StrEnum):
     run_id = auto()
 
 
