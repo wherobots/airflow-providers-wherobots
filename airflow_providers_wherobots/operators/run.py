@@ -8,7 +8,6 @@ from typing import Optional, Sequence, Any
 
 from airflow.models import BaseOperator
 from strenum import StrEnum
-from wherobots.db import Runtime
 
 from airflow_providers_wherobots.hooks.base import DEFAULT_CONN_ID
 from airflow_providers_wherobots.hooks.rest_api import WherobotsRestAPIHook
@@ -33,7 +32,7 @@ class WherobotsRunOperator(BaseOperator):
     def __init__(
         self,
         name: Optional[str] = None,
-        runtime: Runtime = Runtime.SEDONA,
+        runtime: str = "TINY",
         run_python: Optional[dict[str, Any]] = None,
         run_jar: Optional[dict[str, Any]] = None,
         environment: Optional[dict[str, Any]] = None,
@@ -45,8 +44,8 @@ class WherobotsRunOperator(BaseOperator):
     ):
         super().__init__(**kwargs)
         # If the user specifies the name, we will use it and rely on the server to validate the name
-        self.run_payload = {
-            "runtime": runtime.value,
+        self.run_payload: dict[str, Any] = {
+            "runtime": runtime,
             "name": name or self.default_run_name,
         }
         if run_python:
