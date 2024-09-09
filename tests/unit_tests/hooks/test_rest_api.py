@@ -18,8 +18,6 @@ from airflow_providers_wherobots.hooks.rest_api import (
 )
 from airflow_providers_wherobots.wherobots.models import (
     Run,
-    CreateRunPayload,
-    PythonRunPayload,
     LogsResponse,
 )
 from tests.unit_tests import helpers
@@ -108,22 +106,20 @@ class TestWherobotsRestAPIHook:
         """
         test_run: Run = helpers.run_factory.build()
         url = f"https://{test_default_conn.host}/runs"
-        create_payload = CreateRunPayload.create(
-            name=test_run.name,
-            runtime=Runtime.SEDONA,
-            python=PythonRunPayload(
-                uri="s3://bucket/test.py",
-                args=["arg1", "arg2"],
-                entrypoint="src.main",
-            ),
-        )
+        create_payload = {
+            "name": test_run.name,
+            "runtime": Runtime.SEDONA.value,
+            "python": {
+                "uri": "s3://bucket/test.py",
+                "args": ["arg1", "arg2"],
+                "entrypoint": "src.main",
+            },
+        }
         responses.add(
             responses.POST,
             url,
             json=test_run.model_dump(mode="json"),
-            match=[
-                matchers.json_params_matcher(create_payload.model_dump(mode="json"))
-            ],
+            match=[matchers.json_params_matcher(create_payload)],
             status=HTTPStatus.OK,
         )
         with WherobotsRestAPIHook() as hook:

@@ -18,9 +18,7 @@ from pytest_mock import MockerFixture
 
 from airflow_providers_wherobots.operators.run import WherobotsRunOperator
 from airflow_providers_wherobots.wherobots.models import (
-    PythonRunPayload,
     RunStatus,
-    CreateRunPayload,
     LogsResponse,
     Run,
     LogItem,
@@ -74,22 +72,22 @@ class TestWherobotsRunOperator:
         operator = WherobotsRunOperator(
             task_id="test_render_template_python",
             name="test_run_{{ ds }}",
-            python=PythonRunPayload(
-                uri="s3://bucket/test-{{ ds }}.py",
-                args=["{{ ds }}"],
-                entrypoint="src.main_{{ ds }}",
-            ),
+            run_python={
+                "uri": "s3://bucket/test-{{ ds }}.py",
+                "args": ["{{ ds }}"],
+            },
             dag=dag,
         )
         execute_dag(dag, task_id=operator.task_id)
         assert create_run.call_count == 1
         rendered_payload = create_run.call_args.args[0]
-        assert isinstance(rendered_payload, CreateRunPayload)
+        assert isinstance(rendered_payload, dict)
         expected_ds = data_interval_start.format("YYYY-MM-DD")
-        assert rendered_payload.name == f"test_run_{expected_ds}"
-        assert rendered_payload.python.uri == f"s3://bucket/test-{expected_ds}.py"
-        assert rendered_payload.python.args == [expected_ds]
-        assert rendered_payload.python.entrypoint == f"src.main_{expected_ds}"
+        assert rendered_payload["name"] == f"test_run_{expected_ds}"
+        assert (
+            rendered_payload["runPython"]["uri"] == f"s3://bucket/test-{expected_ds}.py"
+        )
+        assert rendered_payload["runPython"]["args"] == [expected_ds]
 
     @pytest.mark.usefixtures("clean_airflow_db")
     def test_default_name(self, mocker: MockerFixture, dag: DAG):
@@ -100,13 +98,13 @@ class TestWherobotsRunOperator:
         )
         operator = WherobotsRunOperator(
             task_id="test_default_name",
-            python=PythonRunPayload(uri=""),
+            run_python={"uri": ""},
             dag=dag,
         )
         execute_dag(dag, task_id=operator.task_id)
         rendered_payload = create_run.call_args.args[0]
-        assert isinstance(rendered_payload, CreateRunPayload)
-        assert rendered_payload.name == operator.default_run_name.replace(
+        assert isinstance(rendered_payload, dict)
+        assert rendered_payload["name"] == operator.default_run_name.replace(
             "{{ ts_nodash }}", data_interval_start.strftime("%Y%m%dT%H%M%S")
         )
 
@@ -160,7 +158,7 @@ class TestWherobotsRunOperator:
             )
         operator = WherobotsRunOperator(
             task_id=f"test_execute_{uuid.uuid4()}",
-            python=PythonRunPayload(uri=""),
+            run_python={"uri": ""},
             dag=dag,
             polling_interval=0,
             poll_logs=poll_logs,
@@ -186,11 +184,11 @@ class TestWherobotsRunOperator:
         operator = WherobotsRunOperator(
             task_id="test_render_template_python",
             name="test_run_{{ ds }}",
-            python=PythonRunPayload(
-                uri="s3://bucket/test-{{ ds }}.py",
-                args=["{{ ds }}"],
-                entrypoint="src.main_{{ ds }}",
-            ),
+            run_python={
+                "uri": "s3://bucket/test-{{ ds }}.py",
+                "args": ["{{ ds }}"],
+                "entrypoint": "src.main_{{ ds }}",
+            },
             dag=dag,
         )
         operator.on_kill()
@@ -209,7 +207,7 @@ class TestWherobotsRunOperator:
         )
         operator = WherobotsRunOperator(
             task_id="test_poll_and_display_logs",
-            python=PythonRunPayload(uri=""),
+            run_python={"uri": ""},
             dag=DAG("test_poll_and_display_logs"),
         )
         assert operator.poll_and_display_logs(hook, test_run, 0) == 2
