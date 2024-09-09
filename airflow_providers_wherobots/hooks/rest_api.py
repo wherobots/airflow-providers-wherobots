@@ -15,7 +15,6 @@ from requests.auth import AuthBase
 from airflow_providers_wherobots.hooks.base import DEFAULT_CONN_ID
 from airflow_providers_wherobots.wherobots.models import (
     Run,
-    CreateRunPayload,
     LogsResponse,
 )
 
@@ -81,11 +80,11 @@ class WherobotsRestAPIHook(BaseHook):
         resp_json = self._api_call("GET", f"/runs/{run_id}").json()
         return Run.model_validate(resp_json)
 
-    def create_run(self, payload: CreateRunPayload) -> Run:
+    def create_run(self, payload: dict[str, Any]) -> Run:
         resp_json = self._api_call(
             "POST",
             "/runs",
-            payload=payload.model_dump(mode="json"),
+            payload=payload,
         ).json()
         return Run.model_validate(resp_json)
 

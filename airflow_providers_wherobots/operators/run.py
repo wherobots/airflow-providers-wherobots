@@ -13,9 +13,6 @@ from wherobots.db import Runtime
 from airflow_providers_wherobots.hooks.base import DEFAULT_CONN_ID
 from airflow_providers_wherobots.hooks.rest_api import WherobotsRestAPIHook
 from airflow_providers_wherobots.wherobots.models import (
-    PythonRunPayload,
-    JavaRunPayload,
-    CreateRunPayload,
     RUN_NAME_ALPHABET,
     RunStatus,
     Run,
@@ -36,9 +33,10 @@ class WherobotsRunOperator(BaseOperator):
     def __init__(
         self,
         name: Optional[str] = None,
-        runtime: Optional[Runtime] = Runtime.SEDONA,
-        python: Optional[PythonRunPayload] = None,
-        java: Optional[JavaRunPayload] = None,
+        runtime: Runtime = Runtime.SEDONA,
+        run_python: Optional[dict[str, Any]] = None,
+        run_jar: Optional[dict[str, Any]] = None,
+        environment: Optional[dict[str, Any]] = None,
         polling_interval: int = 20,
         wherobots_conn_id: str = DEFAULT_CONN_ID,
         poll_logs: bool = False,
@@ -47,12 +45,16 @@ class WherobotsRunOperator(BaseOperator):
     ):
         super().__init__(**kwargs)
         # If the user specifies the name, we will use it and rely on the server to validate the name
-        self.run_payload = CreateRunPayload(
-            runtime=runtime,
-            name=name or self.default_run_name,
-            python=python,
-            java=java,
-        )
+        self.run_payload = {
+            "runtime": runtime.value,
+            "name": name or self.default_run_name,
+        }
+        if run_python:
+            self.run_payload["runPython"] = run_python
+        if run_jar:
+            self.run_payload["runJar"] = run_jar
+        if environment:
+            self.run_payload["environment"] = environment
         self._polling_interval = polling_interval
         self.wherobots_conn_id = wherobots_conn_id
         self.xcom_push = xcom_push
