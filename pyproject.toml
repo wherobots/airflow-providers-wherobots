@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.9, <3.13"
 wherobots-python-dbapi = "^0.7.1"
-pydantic = "^2.8.2"
+pydantic = "^2.3"
 
 [tool.poetry.group.dev.dependencies]
 apache-airflow = "^2.7.0"
