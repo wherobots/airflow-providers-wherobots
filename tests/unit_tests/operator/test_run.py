@@ -33,16 +33,6 @@ TEST_DAG_ID = "test_run_operator"
 TEST_TASK_ID = "run_operator"
 
 
-@pytest.fixture()
-def dag():
-    with DAG(
-        dag_id=TEST_DAG_ID,
-        schedule="@daily",
-        start_date=DEFAULT_START,
-    ) as dag:
-        yield dag
-
-
 def build_ti(dag: DAG, task_id: str, start=DEFAULT_START, end=DEFAULT_END):
     dag_run: DagRun = dag.create_dagrun(
         state=DagRunState.RUNNING,

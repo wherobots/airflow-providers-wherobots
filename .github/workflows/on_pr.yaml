@@ -1,0 +1,15 @@
+name: CI for verifying PR
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+    types: [ opened, synchronize, reopened ]
+    paths-ignore:
+      - README.md
+
+jobs:
+  run-tests:
+    uses: ./.github/workflows/run_tests.yaml
+    secrets: inherit

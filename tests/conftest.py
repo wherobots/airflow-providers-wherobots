@@ -5,8 +5,11 @@ shared helper functions for tests
 import os
 
 import pytest
+from airflow import DAG
 from airflow.models import Connection
 from pytest_mock import MockerFixture
+
+from tests.unit_tests.operator.test_run import TEST_DAG_ID, DEFAULT_START
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -23,3 +26,13 @@ def test_default_conn(mocker: MockerFixture):
 @pytest.fixture(scope="function")
 def clean_airflow_db():
     os.system("airflow db reset --yes")
+
+
+@pytest.fixture()
+def dag():
+    with DAG(
+        dag_id=TEST_DAG_ID,
+        schedule="@daily",
+        start_date=DEFAULT_START,
+    ) as dag:
+        yield dag
