@@ -18,12 +18,10 @@ Otherwise, just `pip install` it:
 $ pip install airflow-providers-wherobots
 ```
 
-## Usage
+### Create an http connection
 
-### Create a connection
-
-You first need to create a Connection in Airflow. This can be done from
-the UI, or from the command-line. The default Wherobots connection name
+Create a Connection in Airflow. This can be done from Apache Airflow's [Web UI](https://airflow.apache.org/docs/apache-airflow/stable/howto/connection.html#creating-connection-ui), 
+or from the command-line. The default Wherobots connection name
 is `wherobots_default`; if you use another name you must specify that
 name with the `wherobots_conn_id` parameter when initializing Wherobots
 operators.
@@ -38,6 +36,92 @@ $ airflow connections add "wherobots_default" \
     --conn-host "api.cloud.wherobots.com" \
     --conn-password "$(< api.key)"
 ```
+
+## Usage
+
+### Execute a `Run` on Wherobots Cloud
+
+Wherobots allows users to upload their code (.py, .jar),
+execute it on the cloud, and monitor the status of the run.
+Each execution is called a `Run`.
+
+The `WherobotsRunOperator` allows you to execute a `Run` on Wherobots Cloud.
+`WherobotsRunOperator` triggers the run according to the parameters you provide,
+and waits for the run to finish before completing the task.
+
+Refer to the [Wherobots Managed Storage Documentation](https://docs.wherobots.com/latest/develop/storage-management/storage/)
+to learn more about how to upload and manage your code on Wherobots Cloud.
+
+Below is an example of `WherobotsRunOperator`
+
+```python
+operator = WherobotsRunOperator(
+        task_id="your_task_id",
+        name="airflow_operator_test_run_{{ ts_nodash }}",
+        run_python={
+            "uri": "s3://wbts-wbc-m97rcg45xi/42ly7mi0p1/data/shared/classification.py"
+        },
+        runtime="tiny-a10-gpu",
+        dag=dag,
+        poll_logs=True,
+    )
+```
+
+#### Arguments
+
+The arguments for the `WherobotsRunOperator` constructor:
+
+The `run_*` arguments are mutually exclusive, you can only specify one of them.
+* `name: str`: The name of the run.
+  If not specified, a default name will be
+  generated.
+* `runtime: str`: The runtime decides the size of the workloads that execute the run.
+  The default value is `tiny`.
+  Find the list of available runtimes in your Wherobots Cloud account
+  -> Organization Settings -> General -> RUNTIME CONFIGURATION.
+  
+  Find the runtime IDs in the bracket on the right side of the city name.
+  
+  ![runtimes.png](doc%2Fruntimes.png)
+
+* `poll_logs: bool`: If `True`, the operator will poll the logs of the run until it finishes.
+  If `False`, the operator will not poll the logs, just track the status of the run.
+* `polling_interval`: The interval in seconds to poll the status of the run.
+  The default value is `30`.
+* `run_python: dict`: A dictionary with the following keys:
+  * `uri: str`: The URI of the Python file to run.
+  * `args: list[str]`: A list of arguments to pass to the Python file.
+* `run_jar: dict`: A dictionary with the following keys:
+  * `uri: str`: The URI of the JAR file to run.
+  * `args: list[str]`: A list of arguments to pass to the JAR file.
+  * `mainClass: str`: The main class to run in the JAR file.
+* `environment: dict`: A dictionary with the following keys:
+  * `sparkDriverDiskGB: int`: The disk size for the Spark driver.
+  * `sparkExecutorDiskGB: int`: The disk size for the Spark executor.
+  * `sparkConfigs: dict`: A dictionary of Spark configurations.
+  * `dependencies: list[dict]`: A list of dependant libraries to install.
+
+The `dependencies` argument is a list of dictionaries.
+There are two types of dependencies supported.
+
+1. `PYPI` dependencies:
+```json
+{
+    "sourceType": "PYPI",
+    "libraryName": "package_name",
+    "libraryVersion": "package_version"
+}
+```
+
+2. `FILE` dependencies:
+```json
+{
+    "sourceType": "FILE",
+    "filePath": "s3://bucket/path/to/dependency.whl"
+}
+```
+File types supported: `.whl`, `.zip`, `.jar`
+
 
 ### Execute a SQL query
 
@@ -54,7 +138,7 @@ SQL with WherobotsDB.
 Refer to the [Wherobots Apache Airflow Provider Documentation](https://docs.wherobots.com/latest/develop/airflow-provider)
 to get more detailed guidance about how to use the Wherobots Apache Airflow Provider.
 
-## Example
+#### Example
 
 Below is an example Airflow DAG that executes a SQL query on Wherobots
 Cloud:
