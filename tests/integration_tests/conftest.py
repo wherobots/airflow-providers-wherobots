@@ -10,18 +10,18 @@ from pytest_mock import MockerFixture
 
 
 @pytest.fixture(scope="function")
-def staging_conn(mocker: MockerFixture):
-    staging_host = "api.staging.wherobots.com"
-    staging_api_token = os.getenv("STAGING_API_TOKEN")
-    if not staging_api_token:
-        raise ValueError("STAGING_API_TOKEN is not set")
-    staging_conn = Connection(
-        conn_id="wherobots_staging_conn",
+def prod_conn(mocker: MockerFixture):
+    prod_host = "api.cloud.wherobots.com"
+    prod_api_token = os.getenv("PROD_API_TOKEN")
+    if not prod_api_token:
+        raise ValueError("PROD_API_TOKEN is not set")
+    prod_conn = Connection(
+        conn_id="wherobots_prod_conn",
         conn_type="http",
-        host=staging_host,
-        password=staging_api_token,
+        host=prod_host,
+        password=prod_api_token,
     )
     mocker.patch.dict(
-        "os.environ", AIRFLOW_CONN_WHEROBOTS_STAGING_CONN=staging_conn.get_uri()
+        "os.environ", AIRFLOW_CONN_WHEROBOTS_PROD_CONN=prod_conn.get_uri()
     )
-    return staging_conn
+    return prod_conn
