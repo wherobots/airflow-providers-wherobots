@@ -73,7 +73,10 @@ class WherobotsRestAPIHook(BaseHook):
         resp = self.session.request(
             url=url, method=method, json=payload, auth=auth, params=params
         )
-        resp.raise_for_status()
+        try:
+            resp.raise_for_status()
+        except requests.HTTPError as e:
+            raise RuntimeError(f"HTTP error: {e} with response: {resp.text}") from e
         return resp
 
     def get_run(self, run_id: str) -> Run:
