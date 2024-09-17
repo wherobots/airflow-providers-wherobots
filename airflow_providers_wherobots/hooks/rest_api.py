@@ -2,10 +2,13 @@
 Hook for WhereRobots API
 """
 
+import platform
 from functools import cached_property
 from typing import Any, Optional
 
 import requests
+from importlib import metadata
+from airflow.version import version as airflow_version
 from airflow.hooks.base import BaseHook
 from airflow.models import Connection
 from requests import PreparedRequest, Response
@@ -61,6 +64,17 @@ class WherobotsRestAPIHook(BaseHook):
     def conn(self) -> Connection:
         return self.get_connection(self.wherobots_conn_id)
 
+    @cached_property
+    def user_agent_header(self):
+        package_version = metadata.version("airflow-providers-wherobots")
+        python_version = platform.python_version()
+        system = platform.system().lower()
+        header_value = (
+            f"airflow-providers-wherobots/{package_version} os/{system}"
+            f" python/{python_version} airflow/{airflow_version}"
+        )
+        return {"User-Agent": header_value}
+
     def _api_call(
         self,
         method: str,
@@ -71,7 +85,12 @@ class WherobotsRestAPIHook(BaseHook):
         auth = WherobotsAuth(self.conn.password)
         url = "https://" + self.conn.host.rstrip("/") + endpoint
         resp = self.session.request(
-            url=url, method=method, json=payload, auth=auth, params=params
+            url=url,
+            method=method,
+            json=payload,
+            auth=auth,
+            params=params,
+            headers=self.user_agent_header,
         )
         try:
             resp.raise_for_status()
@@ -98,3 +117,7 @@ class WherobotsRestAPIHook(BaseHook):
         params = {"cursor": start, "size": size}
         resp_json = self._api_call("GET", f"/runs/{run_id}/logs", params=params).json()
         return LogsResponse.model_validate(resp_json)
+
+
+if __name__ == "__main__":
+    metadata.version("airflow-providers-wherobots")

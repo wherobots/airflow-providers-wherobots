@@ -5,6 +5,7 @@ Test the REST API hooks.
 import json
 from http import HTTPStatus
 
+import airflow
 import requests
 import responses
 from pydantic import BaseModel
@@ -158,3 +159,24 @@ class TestWherobotsRestAPIHook:
         )
         with WherobotsRestAPIHook() as hook:
             hook.cancel_run(run_id=test_run.ext_id)
+
+    def test_user_agent(self, test_default_conn, mocker: MockerFixture) -> None:
+        """
+        Test the user_agent_header property
+        """
+        with WherobotsRestAPIHook() as hook:
+            mocker.patch(
+                "airflow_providers_wherobots.hooks.rest_api.platform.system",
+                return_value="Linux",
+            )
+            mocker.patch(
+                "airflow_providers_wherobots.hooks.rest_api.platform.python_version",
+                return_value="3.8.10",
+            )
+            mocker.patch(
+                "airflow_providers_wherobots.hooks.rest_api.metadata.version",
+                return_value="1.2.3",
+            )
+            assert hook.user_agent_header == {
+                "User-Agent": f"airflow-providers-wherobots/1.2.3 os/linux python/3.8.10 airflow/{airflow.__version__}"
+            }
