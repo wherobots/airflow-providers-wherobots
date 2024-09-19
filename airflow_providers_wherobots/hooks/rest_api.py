@@ -66,7 +66,10 @@ class WherobotsRestAPIHook(BaseHook):
 
     @cached_property
     def user_agent_header(self):
-        package_version = metadata.version("airflow-providers-wherobots")
+        try:
+            package_version = metadata.version("airflow-providers-wherobots")
+        except metadata.PackageNotFoundError:
+            package_version = "unknown"
         python_version = platform.python_version()
         system = platform.system().lower()
         header_value = (
