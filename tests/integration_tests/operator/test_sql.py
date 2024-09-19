@@ -1,0 +1,32 @@
+"""
+Test the operators in sql module
+"""
+
+import datetime
+
+import pendulum
+import pytest
+from airflow import DAG
+from airflow.models import Connection
+from wherobots.db import Runtime
+
+from airflow_providers_wherobots.operators.sql import WherobotsSqlOperator
+
+DEFAULT_START = pendulum.datetime(2021, 9, 13, tz="UTC")
+DEFAULT_END = DEFAULT_START + datetime.timedelta(days=1)
+
+TEST_DAG_ID = "test_sql_operator"
+TEST_TASK_ID = "sql_operator"
+
+
+@pytest.mark.usefixtures("clean_airflow_db")
+def test_prod_run_success(prod_conn: Connection, dag: DAG) -> None:
+    operator = WherobotsSqlOperator(
+        task_id=TEST_TASK_ID,
+        sql="select pickup_datetime from wherobots_pro_data.nyc_taxi.yellow_2009_2010 limit 10",
+        wherobots_conn_id=prod_conn.conn_id,
+        runtime_id=Runtime.SEDONA,
+        dag=dag,
+    )
+    result = operator.execute(context={})
+    assert result.size == 10

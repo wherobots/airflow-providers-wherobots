@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "airflow-providers-wherobots"
-version = "0.1.13"
+version = "0.1.14"
 description = "Airflow extension for communicating with Wherobots Cloud"
 authors = ["zongsi.zhang <zongsi@wherobots.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9, <3.13"
-wherobots-python-dbapi = "^0.7.3"
+wherobots-python-dbapi = "^0.7.5"
 pydantic = "^2.3"
 
 [tool.poetry.group.dev.dependencies]
