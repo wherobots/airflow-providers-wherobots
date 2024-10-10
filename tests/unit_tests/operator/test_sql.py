@@ -28,7 +28,7 @@ class TestWherobotsSqlOperator:
         operator = WherobotsSqlOperator(
             task_id="test_task",
             sql="select * from table_a",
-            runtime_id=Runtime.ATLANTIS,
+            runtime=Runtime.LARGE,
         )
         result = operator.execute(context={})
         print(result)

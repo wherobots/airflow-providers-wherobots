@@ -12,6 +12,8 @@ from wherobots.db import Runtime
 from wherobots.db.constants import (
     DEFAULT_SESSION_WAIT_TIMEOUT_SECONDS,
     DEFAULT_READ_TIMEOUT_SECONDS,
+    DEFAULT_REUSE_SESSION,
+    DEFAULT_RUNTIME,
 )
 from wherobots.db import Cursor as WDbCursor
 from pandas.core.frame import DataFrame
@@ -39,23 +41,26 @@ class WherobotsSqlOperator(SQLExecuteQueryOperator):  # type: ignore[misc]
         self,
         *,
         wherobots_conn_id: str = DEFAULT_CONN_ID,
-        runtime_id: Runtime = Runtime.SEDONA,
+        runtime: Runtime = DEFAULT_RUNTIME,
         session_wait_timeout: int = DEFAULT_SESSION_WAIT_TIMEOUT_SECONDS,
         read_timeout: int = DEFAULT_READ_TIMEOUT_SECONDS,
+        reuse_session: bool = DEFAULT_REUSE_SESSION,
         **kwargs,
     ):
         super().__init__(
             conn_id=wherobots_conn_id, handler=wherobots_default_handler, **kwargs
         )
         self.wherobots_conn_id = wherobots_conn_id
-        self.runtime_id = runtime_id
+        self.runtime = runtime
         self.session_wait_timeout = session_wait_timeout
         self.read_timeout = read_timeout
+        self.reuse_session = reuse_session
 
     def get_db_hook(self) -> DbApiHook:
         return WherobotsSqlHook(
             wherobots_conn_id=self.wherobots_conn_id,
-            runtime_id=self.runtime_id,
+            runtime=self.runtime,
             session_wait_timeout=self.session_wait_timeout,
             read_timeout=self.read_timeout,
+            reuse_session=self.reuse_session,
         )

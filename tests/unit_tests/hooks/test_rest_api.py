@@ -109,7 +109,7 @@ class TestWherobotsRestAPIHook:
         url = f"https://{test_default_conn.host}/runs"
         create_payload = {
             "name": test_run.name,
-            "runtime": Runtime.SEDONA.value,
+            "runtime": Runtime.TINY.value,
             "python": {
                 "uri": "s3://bucket/test.py",
                 "args": ["arg1", "arg2"],
