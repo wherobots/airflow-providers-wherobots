@@ -1,5 +1,5 @@
 """
-Test the operators in sql module
+Test the operators in SQL module
 """
 
 import datetime
@@ -23,9 +23,8 @@ TEST_TASK_ID = "sql_operator"
 def test_prod_run_success(prod_conn: Connection, dag: DAG) -> None:
     operator = WherobotsSqlOperator(
         task_id=TEST_TASK_ID,
-        sql="select pickup_datetime from wherobots_pro_data.nyc_taxi.yellow_2009_2010 limit 10",
+        sql="SELECT pickup_datetime FROM wherobots_pro_data.nyc_taxi.yellow_2009_2010 LIMIT 10",
         wherobots_conn_id=prod_conn.conn_id,
-        runtime_id=Runtime.SEDONA,
         dag=dag,
     )
     result = operator.execute(context={})

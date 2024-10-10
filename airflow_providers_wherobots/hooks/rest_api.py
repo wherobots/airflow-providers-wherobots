@@ -1,5 +1,5 @@
 """
-Hook for WhereRobots API
+Hook for Wherobots' HTTP API
 """
 
 import platform
@@ -15,7 +15,10 @@ from requests import PreparedRequest, Response
 from requests.adapters import HTTPAdapter, Retry
 from requests.auth import AuthBase
 
-from airflow_providers_wherobots.hooks.base import DEFAULT_CONN_ID
+from airflow_providers_wherobots.hooks.base import (
+    DEFAULT_CONN_ID,
+    PACKAGE_NAME,
+)
 from airflow_providers_wherobots.wherobots.models import (
     Run,
     LogsResponse,
@@ -67,13 +70,13 @@ class WherobotsRestAPIHook(BaseHook):
     @cached_property
     def user_agent_header(self):
         try:
-            package_version = metadata.version("airflow-providers-wherobots")
+            package_version = metadata.version(PACKAGE_NAME)
         except metadata.PackageNotFoundError:
             package_version = "unknown"
         python_version = platform.python_version()
         system = platform.system().lower()
         header_value = (
-            f"airflow-providers-wherobots/{package_version} os/{system}"
+            f"{PACKAGE_NAME}/{package_version} os/{system}"
             f" python/{python_version} airflow/{airflow_version}"
         )
         return {"User-Agent": header_value}
@@ -120,7 +123,3 @@ class WherobotsRestAPIHook(BaseHook):
         params = {"cursor": start, "size": size}
         resp_json = self._api_call("GET", f"/runs/{run_id}/logs", params=params).json()
         return LogsResponse.model_validate(resp_json)
-
-
-if __name__ == "__main__":
-    metadata.version("airflow-providers-wherobots")
