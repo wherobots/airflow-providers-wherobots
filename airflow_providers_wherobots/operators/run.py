@@ -42,6 +42,7 @@ class WherobotsRunOperator(BaseOperator):
         polling_interval: int = 20,
         wherobots_conn_id: str = DEFAULT_CONN_ID,
         poll_logs: bool = False,
+        timeout_seconds: int = 3600,
         xcom_push: bool = True,
         **kwargs,
     ):
@@ -50,6 +51,7 @@ class WherobotsRunOperator(BaseOperator):
         self.run_payload: dict[str, Any] = {
             "runtime": runtime.value,
             "name": name or self.default_run_name,
+            "timeoutSeconds": timeout_seconds,
         }
         if run_python:
             self.run_payload["runPython"] = run_python

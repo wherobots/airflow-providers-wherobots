@@ -79,6 +79,9 @@ The arguments for the `WherobotsRunOperator` constructor:
   If `False`, the operator will not poll the logs, just track the status of the run.
 * `polling_interval`: The interval in seconds to poll the status of the run.
   The default value is `30`.
+* `timeout_seconds: int`: This parameter sets a maximum run time (in seconds) to prevent runaway processes. 
+If the specified value exceeds the Max Workload Alive Hours, the timeout will be capped at the maximum permissible limit. 
+Defaults to `3600` seconds (1 hour).
 * `run_python: dict`: A dictionary with the following keys:
   * `uri: str`: The URI of the Python file to run.
   * `args: list[str]`: A list of arguments to pass to the Python file.

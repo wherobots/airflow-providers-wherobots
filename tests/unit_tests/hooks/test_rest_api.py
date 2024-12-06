@@ -115,6 +115,7 @@ class TestWherobotsRestAPIHook:
                 "args": ["arg1", "arg2"],
                 "entrypoint": "src.main",
             },
+            "timeoutSeconds": 5000,
         }
         responses.add(
             responses.POST,
