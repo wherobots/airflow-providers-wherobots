@@ -6,8 +6,8 @@ authors = ["zongsi.zhang <zongsi@wherobots.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9, <3.13"
-wherobots-python-dbapi = "^0.9.1"
+python = ">=3.8, <3.13"
+wherobots-python-dbapi = "^0.10.1"
 pydantic = "^2.3"
 
 [tool.poetry.group.dev.dependencies]
