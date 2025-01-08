@@ -4,7 +4,7 @@ Hook for Wherobots' HTTP API
 
 import platform
 from functools import cached_property
-from typing import Any, Optional
+from typing import Any, Optional, Dict
 
 import requests
 from importlib import metadata
@@ -85,8 +85,8 @@ class WherobotsRestAPIHook(BaseHook):
         self,
         method: str,
         endpoint: str,
-        payload: Optional[dict[str, Any]] = None,
-        params: Optional[dict[str, Any]] = None,
+        payload: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Any]] = None,
     ) -> Response:
         auth = WherobotsAuth(self.conn.password)
         url = "https://" + self.conn.host.rstrip("/") + endpoint
@@ -108,7 +108,7 @@ class WherobotsRestAPIHook(BaseHook):
         resp_json = self._api_call("GET", f"/runs/{run_id}").json()
         return Run.model_validate(resp_json)
 
-    def create_run(self, payload: dict[str, Any]) -> Run:
+    def create_run(self, payload: Dict[str, Any]) -> Run:
         resp_json = self._api_call(
             "POST",
             "/runs",

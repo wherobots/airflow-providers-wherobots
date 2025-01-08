@@ -5,7 +5,7 @@ Test the operators in run module
 import datetime
 import itertools
 import uuid
-from typing import Tuple
+from typing import Tuple, List
 from unittest.mock import MagicMock
 
 import pendulum
@@ -130,7 +130,7 @@ class TestWherobotsRunOperator:
         mocker: MockerFixture,
         dag: DAG,
         poll_logs: bool,
-        test_item: Tuple[list[Run], TaskInstanceState],
+        test_item: Tuple[List[Run], TaskInstanceState],
     ):
         get_run_results, task_state = test_item
         mocked_create_run = mocker.patch(

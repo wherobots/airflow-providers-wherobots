@@ -4,7 +4,7 @@ Define the Operators for triggering and monitoring the execution of Wherobots Ru
 
 from enum import auto
 from time import sleep
-from typing import Optional, Sequence, Any
+from typing import Optional, Sequence, Any, Dict
 
 from airflow.models import BaseOperator
 from strenum import StrEnum
@@ -36,9 +36,9 @@ class WherobotsRunOperator(BaseOperator):
         self,
         name: Optional[str] = None,
         runtime: Runtime = DEFAULT_RUNTIME,
-        run_python: Optional[dict[str, Any]] = None,
-        run_jar: Optional[dict[str, Any]] = None,
-        environment: Optional[dict[str, Any]] = None,
+        run_python: Optional[Dict[str, Any]] = None,
+        run_jar: Optional[Dict[str, Any]] = None,
+        environment: Optional[Dict[str, Any]] = None,
         polling_interval: int = 20,
         wherobots_conn_id: str = DEFAULT_CONN_ID,
         poll_logs: bool = False,
@@ -48,7 +48,7 @@ class WherobotsRunOperator(BaseOperator):
     ):
         super().__init__(**kwargs)
         # If the user specifies the name, we will use it and rely on the server to validate the name
-        self.run_payload: dict[str, Any] = {
+        self.run_payload: Dict[str, Any] = {
             "runtime": runtime.value,
             "name": name or self.default_run_name,
             "timeoutSeconds": timeout_seconds,
