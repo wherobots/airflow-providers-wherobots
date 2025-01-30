@@ -30,8 +30,8 @@ class WherobotsAuth(AuthBase):
         self.api_key = api_key
 
     def __call__(self, r: PreparedRequest):
-        # modify and return the request
-        r.headers["X-API-Key"] = self.api_key
+        if self.api_key:
+            r.headers["X-API-Key"] = self.api_key
         return r
 
 
