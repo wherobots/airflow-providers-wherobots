@@ -146,7 +146,7 @@ class WherobotsRunOperator(BaseOperator):
             self.log.info(f"Creating Run with payload {self.run_payload}")
             run = rest_api_hook.create_run(self.run_payload)
             if self.do_xcom_push and context:
-                context["ti"].xcom_push(key=XComKey.run_id, value=run.ext_id)
+                self.xcom_push(context, key=XComKey.run_id, value=run.ext_id)
             self.run_id = run.ext_id
             self.log.info(f"Run {run.ext_id} created")
             # wait for the run ends

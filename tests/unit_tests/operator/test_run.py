@@ -162,6 +162,7 @@ class TestWherobotsRunOperator:
         assert ti.state == task_state
         # test xcom push
         if task_state == TaskInstanceState.SUCCESS:
+            ti.xcom_push("key", "value")
             assert ti.xcom_pull(key="run_id") == mocked_create_run.return_value.ext_id
 
     def test_on_kill(
