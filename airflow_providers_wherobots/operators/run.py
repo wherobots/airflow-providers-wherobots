@@ -43,7 +43,6 @@ class WherobotsRunOperator(BaseOperator):
         wherobots_conn_id: str = DEFAULT_CONN_ID,
         poll_logs: bool = False,
         timeout_seconds: int = 3600,
-        xcom_push: bool = True,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -61,7 +60,6 @@ class WherobotsRunOperator(BaseOperator):
             self.run_payload["environment"] = environment
         self._polling_interval = polling_interval
         self.wherobots_conn_id = wherobots_conn_id
-        self.xcom_push = xcom_push
         self.run_id: Optional[str] = None
         self.poll_logs = poll_logs
         self._logs_available = False
@@ -147,7 +145,7 @@ class WherobotsRunOperator(BaseOperator):
         with WherobotsRestAPIHook(self.wherobots_conn_id) as rest_api_hook:
             self.log.info(f"Creating Run with payload {self.run_payload}")
             run = rest_api_hook.create_run(self.run_payload)
-            if self.xcom_push and context:
+            if self.do_xcom_push and context:
                 context["ti"].xcom_push(key=XComKey.run_id, value=run.ext_id)
             self.run_id = run.ext_id
             self.log.info(f"Run {run.ext_id} created")

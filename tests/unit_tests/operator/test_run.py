@@ -152,6 +152,7 @@ class TestWherobotsRunOperator:
             dag=dag,
             polling_interval=0,
             poll_logs=poll_logs,
+            do_xcom_push=True,
         )
         ti = build_ti(dag, task_id=operator.task_id)
         try:
