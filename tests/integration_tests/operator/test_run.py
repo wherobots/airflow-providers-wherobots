@@ -30,6 +30,7 @@ def test_prod_run_success(prod_conn: Connection, dag: DAG) -> None:
             "uri": "s3://wbts-wbc-m97rcg45xi/42ly7mi0p1/data/shared/very_simple_job.py"
         },
         dag=dag,
+        do_xcom_push=True,
     )
     ti = build_ti(dag, task_id=operator.task_id)
     ti.run(ignore_ti_state=True)
