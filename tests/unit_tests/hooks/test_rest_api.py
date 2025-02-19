@@ -11,7 +11,7 @@ import responses
 from pydantic import BaseModel
 from pytest_mock import MockerFixture
 from responses import matchers
-from wherobots.db import Runtime
+from wherobots.db import Runtime, Region
 
 from airflow_providers_wherobots.hooks.rest_api import (
     WherobotsAuth,
@@ -125,7 +125,7 @@ class TestWherobotsRestAPIHook:
             status=HTTPStatus.OK,
         )
         with WherobotsRestAPIHook() as hook:
-            hook.create_run(payload=create_payload)
+            hook.create_run(payload=create_payload, region=Region.AWS_US_WEST_2)
 
     @responses.activate
     def test_get_run_logs(self, test_default_conn) -> None:

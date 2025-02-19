@@ -14,6 +14,7 @@ from airflow.models import Connection
 from requests import PreparedRequest, Response
 from requests.adapters import HTTPAdapter, Retry
 from requests.auth import AuthBase
+from wherobots.db import Region
 
 from airflow_providers_wherobots.hooks.base import (
     DEFAULT_CONN_ID,
@@ -108,11 +109,12 @@ class WherobotsRestAPIHook(BaseHook):
         resp_json = self._api_call("GET", f"/runs/{run_id}").json()
         return Run.model_validate(resp_json)
 
-    def create_run(self, payload: Dict[str, Any]) -> Run:
+    def create_run(self, payload: Dict[str, Any], region: Region) -> Run:
         resp_json = self._api_call(
             "POST",
             "/runs",
             payload=payload,
+            params={"region": region.value},
         ).json()
         return Run.model_validate(resp_json)
 
