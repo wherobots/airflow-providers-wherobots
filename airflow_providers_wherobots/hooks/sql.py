@@ -5,7 +5,7 @@ Hook for Wherobots' Spatial SQL API interface.
 from typing import Optional
 
 from airflow.providers.common.sql.hooks.sql import DbApiHook
-from wherobots.db import Connection as WDBConnection
+from wherobots.db import Connection as WDBConnection, Region
 from wherobots.db import Runtime, connect
 from wherobots.db.constants import (
     DEFAULT_SESSION_WAIT_TIMEOUT_SECONDS,
@@ -22,6 +22,7 @@ class WherobotsSqlHook(DbApiHook):  # type: ignore[misc]
 
     def __init__(  # type: ignore[no-untyped-def]
         self,
+        region: Optional[Region] = None,
         wherobots_conn_id: str = DEFAULT_CONN_ID,
         runtime: Runtime = DEFAULT_RUNTIME,
         session_wait_timeout: int = DEFAULT_SESSION_WAIT_TIMEOUT_SECONDS,
@@ -35,6 +36,7 @@ class WherobotsSqlHook(DbApiHook):  # type: ignore[misc]
         self.session_wait_timeout = session_wait_timeout
         self.read_timeout = read_timeout
         self.reuse_session = reuse_session
+        self.region = region
 
         self._conn = self.get_connection(self.wherobots_conn_id)
         self._db_conn: Optional[WDBConnection] = None
@@ -47,6 +49,7 @@ class WherobotsSqlHook(DbApiHook):  # type: ignore[misc]
             host=self._conn.host,
             api_key=self._conn.get_password(),
             runtime=runtime,
+            region=self.region,
             wait_timeout=self.session_wait_timeout,
             read_timeout=self.read_timeout,
             reuse_session=self.reuse_session,

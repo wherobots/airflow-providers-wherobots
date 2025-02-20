@@ -4,11 +4,11 @@ Operator for firing sql queries and collect results to s3
 
 from __future__ import annotations
 
-from typing import Sequence
+from typing import Sequence, Optional
 
 from airflow.providers.common.sql.hooks.sql import DbApiHook
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-from wherobots.db import Runtime
+from wherobots.db import Runtime, Region
 from wherobots.db.constants import (
     DEFAULT_SESSION_WAIT_TIMEOUT_SECONDS,
     DEFAULT_READ_TIMEOUT_SECONDS,
@@ -20,6 +20,7 @@ from pandas.core.frame import DataFrame
 
 from airflow_providers_wherobots.hooks.sql import WherobotsSqlHook
 from airflow_providers_wherobots.hooks.base import DEFAULT_CONN_ID
+from airflow_providers_wherobots.operators import warn_for_default_region
 
 
 def wherobots_default_handler(cursor: WDbCursor) -> DataFrame | None:
@@ -40,6 +41,7 @@ class WherobotsSqlOperator(SQLExecuteQueryOperator):  # type: ignore[misc]
     def __init__(  # type: ignore[no-untyped-def]
         self,
         *,
+        region: Optional[Region] = None,
         wherobots_conn_id: str = DEFAULT_CONN_ID,
         runtime: Runtime = DEFAULT_RUNTIME,
         session_wait_timeout: int = DEFAULT_SESSION_WAIT_TIMEOUT_SECONDS,
@@ -55,9 +57,12 @@ class WherobotsSqlOperator(SQLExecuteQueryOperator):  # type: ignore[misc]
         self.session_wait_timeout = session_wait_timeout
         self.read_timeout = read_timeout
         self.reuse_session = reuse_session
+        self.region = region
 
     def get_db_hook(self) -> DbApiHook:
+        self.region = warn_for_default_region(self.region)
         return WherobotsSqlHook(
+            region=self.region,
             wherobots_conn_id=self.wherobots_conn_id,
             runtime=self.runtime,
             session_wait_timeout=self.session_wait_timeout,

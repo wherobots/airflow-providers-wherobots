@@ -15,6 +15,7 @@ from airflow.models import DagRun, TaskInstance
 from airflow.utils.state import DagRunState, TaskInstanceState
 from airflow.utils.types import DagRunType
 from pytest_mock import MockerFixture
+from wherobots.db import Region
 
 from airflow_providers_wherobots.operators.run import WherobotsRunOperator
 from airflow_providers_wherobots.wherobots.models import (
@@ -60,6 +61,7 @@ class TestWherobotsRunOperator:
             return_value=run_factory.build(status=RunStatus.COMPLETED),
         )
         operator = WherobotsRunOperator(
+            region=Region.AWS_US_WEST_2,
             task_id="test_render_template_python",
             name="test_run_{{ ds }}",
             run_python={
@@ -68,6 +70,7 @@ class TestWherobotsRunOperator:
             },
             dag=dag,
         )
+        assert operator.region == Region.AWS_US_WEST_2
         execute_dag(dag, task_id=operator.task_id)
         assert create_run.call_count == 1
         rendered_payload = create_run.call_args.args[0]

@@ -11,13 +11,14 @@ from strenum import StrEnum
 
 from airflow_providers_wherobots.hooks.base import DEFAULT_CONN_ID
 from airflow_providers_wherobots.hooks.rest_api import WherobotsRestAPIHook
+from airflow_providers_wherobots.operators import warn_for_default_region
 from airflow_providers_wherobots.wherobots.models import (
     RUN_NAME_ALPHABET,
     RunStatus,
     Run,
 )
 
-from wherobots.db import Runtime
+from wherobots.db import Runtime, Region
 from wherobots.db.constants import DEFAULT_RUNTIME
 
 
@@ -34,6 +35,7 @@ class WherobotsRunOperator(BaseOperator):
 
     def __init__(
         self,
+        region: Optional[Region] = None,
         name: Optional[str] = None,
         runtime: Runtime = DEFAULT_RUNTIME,
         run_python: Optional[Dict[str, Any]] = None,
@@ -52,6 +54,7 @@ class WherobotsRunOperator(BaseOperator):
             "name": name or self.default_run_name,
             "timeoutSeconds": timeout_seconds,
         }
+        self.region = region
         if run_python:
             self.run_payload["runPython"] = run_python
         if run_jar:
@@ -143,8 +146,11 @@ class WherobotsRunOperator(BaseOperator):
         Trigger the Wherobots Run and keep polling for status until the Run ends
         """
         with WherobotsRestAPIHook(self.wherobots_conn_id) as rest_api_hook:
-            self.log.info(f"Creating Run with payload {self.run_payload}")
-            run = rest_api_hook.create_run(self.run_payload)
+            self.region = warn_for_default_region(self.region)
+            self.log.info(
+                f"Creating Run in region {self.region} with payload {self.run_payload}"
+            )
+            run = rest_api_hook.create_run(self.run_payload, self.region)
             if self.do_xcom_push and context:
                 self.xcom_push(context, key=XComKey.run_id, value=run.ext_id)
             self.run_id = run.ext_id
