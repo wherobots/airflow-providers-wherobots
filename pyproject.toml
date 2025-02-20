@@ -7,11 +7,11 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.8, <3.13"
-wherobots-python-dbapi = "^0.10.1"
+wherobots-python-dbapi = "^0.11.0"
 pydantic = "^2.3"
 
 [tool.poetry.group.dev.dependencies]
-apache-airflow = "^2.7.0"
+apache-airflow = "^2.6.0"
 pytest = "^8.1.1"
 requests-mock = "^1.12.1"
 aioresponses = "^0.7.4"

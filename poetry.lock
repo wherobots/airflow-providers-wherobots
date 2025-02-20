@@ -4311,13 +4311,13 @@ watchdog = ["watchdog"]
 
 [[package]]
 name = "wherobots-python-dbapi"
-version = "0.10.1"
+version = "0.11.0"
 description = "Python DB-API driver for Wherobots DB"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "wherobots_python_dbapi-0.10.1-py3-none-any.whl", hash = "sha256:4d6866fb42e67785c681c26a3d49c53ad60c90a29d7ce420bdd8eb5aa7fd93a0"},
-    {file = "wherobots_python_dbapi-0.10.1.tar.gz", hash = "sha256:bf16b1b4fdf8ba82597ee1d46b302a359e7e4dc850a5b804ee021c349b110b04"},
+    {file = "wherobots_python_dbapi-0.11.0-py3-none-any.whl", hash = "sha256:a79029fae2e8a7fe256a16d6ab272b239363d4a857a4cd536b17d96933ff2127"},
+    {file = "wherobots_python_dbapi-0.11.0.tar.gz", hash = "sha256:aee2794fe30038c303d2755aa815f9f344870215d6298a324f0b5a0f0cfae018"},
 ]
 
 [package.dependencies]
@@ -4587,4 +4587,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8, <3.13"
-content-hash = "45286e72b9c5745ab279cdb3c0d9f56574f2f6d6960c0ed5ebeac8dbc12b33de"
+content-hash = "0dd6a4fb535dd3d4829fcd23de642828e8d923b6f7757a001ecaddb8b2838b87"
