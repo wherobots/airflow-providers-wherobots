@@ -30,5 +30,4 @@ class TestWherobotsSqlOperator:
             sql="select * from table_a",
             runtime=Runtime.LARGE,
         )
-        result = operator.execute(context={})
-        print(result)
+        operator.execute(context={})

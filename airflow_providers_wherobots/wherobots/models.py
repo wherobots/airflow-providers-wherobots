@@ -31,11 +31,34 @@ class WherobotsModel(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
+class KubeAppEvent(BaseModel):
+    code: str
+    message: Optional[str] = None
+
+
+class KubeApp(BaseModel):
+    events: List[KubeAppEvent]
+
+
 class Run(WherobotsModel):
     name: str
     status: RunStatus
     start_time: Optional[datetime] = Field(default=None, alias="startTime")
     end_time: Optional[datetime] = Field(default=None, alias="completeTime")
+    kube_app: Optional[KubeApp] = Field(default=None, alias="kubeApp")
+
+    @property
+    def is_timeout(self) -> bool:
+        if not self.kube_app or not self.kube_app.events:
+            return False
+        return any(
+            (
+                event.code == "RUN_FAIL_EXEC"
+                and event.message
+                and "timeout" in event.message.lower()
+            )
+            for event in self.kube_app.events
+        )
 
 
 class LogItem(BaseModel):
