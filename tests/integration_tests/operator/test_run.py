@@ -37,3 +37,24 @@ def test_prod_run_success(prod_conn: Connection, dag: DAG) -> None:
     ti = build_ti(dag, task_id=operator.task_id)
     ti.run(ignore_ti_state=True)
     assert ti.state == TaskInstanceState.SUCCESS
+
+
+@pytest.mark.usefixtures("clean_airflow_db")
+def test_prod_run_timeout(prod_conn: Connection, dag: DAG) -> None:
+    operator = WherobotsRunOperator(
+        region=Region.AWS_US_WEST_2,
+        wherobots_conn_id=prod_conn.conn_id,
+        task_id="test_run_smoke",
+        name="airflow_operator_test_run_{{ ts_nodash }}",
+        run_python={
+            "uri": "s3://wbts-wbc-m97rcg45xi/42ly7mi0p1/data/shared/tile-generation-example.py"
+        },
+        dag=dag,
+        do_xcom_push=True,
+        timeout_seconds=2,
+    )
+    ti = build_ti(dag, task_id=operator.task_id)
+    with pytest.raises(RuntimeError) as e:
+        ti.run(ignore_ti_state=True)
+        assert "failed due to timeout" in str(e.value)
+    assert ti.state == TaskInstanceState.FAILED
