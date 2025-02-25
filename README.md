@@ -54,9 +54,15 @@ to learn more about how to upload and manage your code on Wherobots Cloud.
 Below is an example of `WherobotsRunOperator`
 
 ```python
+from airflow_providers_wherobots.operators.sql import WherobotsRunOperator
+
+from wherobots.db.region import Region
+from wherobots.db.runtime import Runtime
+
 operator = WherobotsRunOperator(
         task_id="your_task_id",
         name="airflow_operator_test_run_{{ ts_nodash }}",
+        region=Region.AWS_US_WEST_2,
         runtime=Runtime.TINY_A10_GPU,
         run_python={
             "uri": "s3://wbts-wbc-m97rcg45xi/42ly7mi0p1/data/shared/classification.py"
@@ -70,6 +76,16 @@ operator = WherobotsRunOperator(
 
 The arguments for the `WherobotsRunOperator` constructor:
 
+* `region: Region`: The Wherobots region where runs are hosted.
+  The values available can be found in `wherobots.db.region.Region`.
+  The default value is `Region.AWS_US_WEST_2` and this is the only region in which Wherobots Cloud operates workloads today.
+  > [!IMPORTANT]
+  > We will soon enforce the `region` parameter when Wherobots Cloud extends support to new regions and cloud providers.
+  > We will version the SDK in advance of supporting new regions.
+  > In the new version of the SDK a region will be required rather than an optional parameter.
+  > If you remain on the current SDK version, your Airflow Task will not be impacted.
+  > But your Job run will always be hosted on the aws-us-west-2 region
+  > if you leave the `region` parameter unspecified.
 * `name: str`: The name of the run. If not specified, a default name will be
   generated.
 * `runtime: Runtime`: The runtime dictates the size and amount of resources
@@ -94,9 +110,15 @@ Defaults to `3600` seconds (1 hour).
   * `sparkExecutorDiskGB: int`: The disk size for the Spark executor.
   * `sparkConfigs: dict`: A dictionary of Spark configurations.
   * `dependencies: list[dict]`: A list of dependant libraries to install.
+  
+  For more detailed information about the `environment` parameter,
+  please refer to the [Wherobots Documentation](https://docs.wherobots.com/latest/references/runs/#get-run-logs).
 
 > [!IMPORTANT]
-> Wherobots Community Edition users only have access to the "Tiny" runtime type.
+> Today Wherobots Cloud offers COMMUNITY users free access to [tiny](https://docs.wherobots.com/latest/develop/runtimes/#runtime-specifications-chart) runtime.
+> If you need access to runtimes larger than `tiny`,
+> try Wherobots Cloud's pay-as-you-go [PROFESSIONAL](https://wherobots.com/pricing/) plan.
+> For more information, please refer to the [Guidance for upgrading your account](https://docs.wherobots.com/latest/get-started/upgrade-organization/).
 
 > [!WARNING]
 > The `run_*` arguments are mutually exclusive, you can only specify one of them.
@@ -148,6 +170,8 @@ import datetime
 from airflow import DAG
 from airflow_providers_wherobots.operators.sql import WherobotsSqlOperator
 
+from wherobots.db.region import Region
+from wherobots.db.runtime import Runtime
 
 with DAG(
     dag_id="example_wherobots_sql_dag",
@@ -161,6 +185,7 @@ with DAG(
         task_id="execute_query",
         return_last=False,
         runtime=Runtime.TINY,
+        region=Region.AWS_US_WEST_2,
         sql=f"""
         INSERT INTO wherobots.test.airflow_example
         SELECT id, geometry, confidence, geohash
@@ -172,6 +197,16 @@ with DAG(
 
 ### Arguments
 
+* `region: Region`: The Wherobots Compute Region where the SQL query executions are hosted.
+  The values available can be found in `wherobots.db.region.Region`.
+  The default value is `Region.AWS_US_WEST_2` and this is the only region in which Wherobots Cloud operates workloads today.
+  > [!IMPORTANT]
+  > We will soon enforce the `region` parameter when Wherobots Cloud extends support to new regions and cloud providers.
+  > We will version the SDK in advance of supporting new regions.
+  > In the new version of the SDK a region will be required rather than an optional parameter.
+  > If you remain on the current SDK version, your Airflow Task will not be impacted.
+  > But your SQL query will always be hosted on the aws-us-west-2 region
+  > if you leave the `region` parameter unspecified.
 * `runtime: Runtime`: The runtime dictates the size and amount of resources
   powering the run. The default value is `Runtime.TINY`; see available values
   [here](https://github.com/wherobots/wherobots-python-dbapi/blob/main/wherobots/db/runtime.py).
