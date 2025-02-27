@@ -80,12 +80,10 @@ The arguments for the `WherobotsRunOperator` constructor:
   The values available can be found in `wherobots.db.region.Region`.
   The default value is `Region.AWS_US_WEST_2` and this is the only region in which Wherobots Cloud operates workloads today.
   > [!IMPORTANT]
-  > We will soon enforce the `region` parameter when Wherobots Cloud extends support to new regions and cloud providers.
-  > We will version the SDK in advance of supporting new regions.
-  > In the new version of the SDK a region will be required rather than an optional parameter.
-  > If you remain on the current SDK version, your Airflow Task will not be impacted.
-  > But your Job run will always be hosted on the aws-us-west-2 region
-  > if you leave the `region` parameter unspecified.
+  > To prepare for the expansion of Wherobots Cloud to new regions and cloud providers, the `region` parameter will become mandatory in a future SDK version.
+  > Before this support for new regions is added, we will release an updated version of the SDK. 
+  > If you continue using an older SDK version, your existing Airflow tasks will still work.
+  > However, any new or existing job runs you create without specifying the `region` parameter will be hosted in the `aws-us-west-2` region.
 * `name: str`: The name of the run. If not specified, a default name will be
   generated.
 * `runtime: Runtime`: The runtime dictates the size and amount of resources
@@ -110,15 +108,14 @@ Defaults to `3600` seconds (1 hour).
   * `sparkExecutorDiskGB: int`: The disk size for the Spark executor.
   * `sparkConfigs: dict`: A dictionary of Spark configurations.
   * `dependencies: list[dict]`: A list of dependant libraries to install.
-  
+
   For more detailed information about the `environment` parameter,
-  please refer to the [Wherobots Documentation](https://docs.wherobots.com/latest/references/runs/#get-run-logs).
+  refer to [Get Run Logs](https://docs.wherobots.com/latest/references/runs/#get-run-logs) in the Wherobots Documentation.
 
 > [!IMPORTANT]
-> Today Wherobots Cloud offers COMMUNITY users free access to [tiny](https://docs.wherobots.com/latest/develop/runtimes/#runtime-specifications-chart) runtime.
-> If you need access to runtimes larger than `tiny`,
-> try Wherobots Cloud's pay-as-you-go [PROFESSIONAL](https://wherobots.com/pricing/) plan.
-> For more information, please refer to the [Guidance for upgrading your account](https://docs.wherobots.com/latest/get-started/upgrade-organization/).
+> Today Wherobots Cloud offers free access to the ["Tiny" runtime](https://docs.wherobots.com/latest/develop/runtimes/#runtime-specifications-chart) through the Community Edition Organization.
+> If you need access to larger runtimes (including Memory-Optimized and GPU-Optimized runtimes), consider upgrading to a Professional Edition Organization, Wherobots Cloud's [pay-as-you-go](https://wherobots.com/pricing/) plan.
+> For more information, refer to the [Upgrade Organization](https://docs.wherobots.com/latest/get-started/upgrade-organization/) guidance in the Wherobots Documentation.
 
 > [!WARNING]
 > The `run_*` arguments are mutually exclusive, you can only specify one of them.
@@ -201,12 +198,10 @@ with DAG(
   The values available can be found in `wherobots.db.region.Region`.
   The default value is `Region.AWS_US_WEST_2` and this is the only region in which Wherobots Cloud operates workloads today.
   > [!IMPORTANT]
-  > We will soon enforce the `region` parameter when Wherobots Cloud extends support to new regions and cloud providers.
-  > We will version the SDK in advance of supporting new regions.
-  > In the new version of the SDK a region will be required rather than an optional parameter.
-  > If you remain on the current SDK version, your Airflow Task will not be impacted.
-  > But your SQL query will always be hosted on the aws-us-west-2 region
-  > if you leave the `region` parameter unspecified.
+  > To prepare for the expansion of Wherobots Cloud to new regions and cloud providers, the `region` parameter will become mandatory in a future SDK version.
+  > Before this support for new regions is added, we will release an updated version of the SDK. 
+  > If you continue using an older SDK version, your existing Airflow tasks will still work.
+  > However, any new or existing SQL queries that don't specify the `region` parameter will be hosted in the `aws-us-west-2` region.
 * `runtime: Runtime`: The runtime dictates the size and amount of resources
   powering the run. The default value is `Runtime.TINY`; see available values
   [here](https://github.com/wherobots/wherobots-python-dbapi/blob/main/wherobots/db/runtime.py).
