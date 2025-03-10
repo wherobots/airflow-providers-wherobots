@@ -9,7 +9,7 @@ from airflow import DAG
 from airflow.models import Connection
 from pytest_mock import MockerFixture
 
-from tests.unit_tests.operator.test_run import TEST_DAG_ID, DEFAULT_START
+from tests.unit_tests.operators.test_run import TEST_DAG_ID, DEFAULT_START
 
 
 @pytest.fixture(scope="function", autouse=True)
