@@ -14,6 +14,7 @@ from airflow import DAG
 from airflow.models import DagRun, TaskInstance
 from airflow.utils.state import DagRunState, TaskInstanceState
 from airflow.utils.types import DagRunType
+from airflow_providers_wherobots.operators import run
 from pytest_mock import MockerFixture
 from wherobots.db import Region
 
@@ -207,3 +208,29 @@ class TestWherobotsRunOperator:
         )
         assert operator.poll_and_display_logs(hook, test_run, 0) == 2
         hook.get_run_logs.assert_called_with(test_run.ext_id, 0)
+
+    def test_wait_run_poll_logs(self, mocker: MockerFixture):
+        hook = mocker.MagicMock()
+        test_run: Run = helpers.run_factory.build()
+        operator = WherobotsRunOperator(
+            task_id="test_poll_and_display_logs",
+            run_python={"uri": ""},
+            dag=DAG("test_poll_and_display_logs"),
+            wait_post_run_logs_timeout_seconds=1,
+        )
+        run.POST_RUN_POLL_LOGS_INTERVAL = 0.1
+        mocked_poll_method = mocker.patch.object(
+            operator, "poll_and_display_logs", side_effect=[2] * 20
+        )
+        operator._tail_post_run_logs(hook, test_run, 1)
+        # The polling should stops before iterate on all the 20 side effects as the next_cursor is not increasing for more than the timeout
+        assert mocked_poll_method.call_count < 20
+        # The polling should not stop before 30 as the next_cursor increase for 30 rounds
+        mocked_poll_method = mocker.patch.object(
+            operator,
+            "poll_and_display_logs",
+            side_effect=list(range(0, 30)) + [30] * 20,
+        )
+        operator._tail_post_run_logs(hook, test_run, 1)
+        assert mocked_poll_method.call_count > 30
+        operator._tail_post_run_logs(hook, test_run, 1)
