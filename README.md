@@ -89,8 +89,8 @@ The arguments for the `WherobotsRunOperator` constructor:
 * `runtime: Runtime`: The runtime dictates the size and amount of resources
   powering the run. The default value is `Runtime.TINY`; see available values
   [here](https://github.com/wherobots/wherobots-python-dbapi/blob/main/wherobots/db/runtime.py).
-* `poll_logs: bool`: If `True`, the operator will poll the logs of the run until it finishes.
-  If `False`, the operator will not poll the logs, just track the status of the run.
+* `poll_logs: bool`: If `True`, the operator will poll and `Logger.info()` the run logs until the run finishes.
+  If `False`, the operator will not poll the logs, only track the status of the run.
 * `polling_interval`: The interval in seconds to poll the status of the run.
   The default value is `30`.
 * `timeout_seconds: int`: This parameter sets a maximum run time (in seconds) to prevent runaway processes. 
@@ -108,6 +108,8 @@ Defaults to `3600` seconds (1 hour).
   * `sparkExecutorDiskGB: int`: The disk size for the Spark executor.
   * `sparkConfigs: dict`: A dictionary of Spark configurations.
   * `dependencies: list[dict]`: A list of dependant libraries to install.
+* `wait_post_run_logs_timeout_seconds: int`: Maximum duration (in seconds) the system waits for logs to become queryable after job completion. 
+The default value is `60` seconds.
 
   For more detailed information about the `environment` parameter,
   refer to [Get Run Logs](https://docs.wherobots.com/latest/references/runs/#get-run-logs) in the Wherobots Documentation.

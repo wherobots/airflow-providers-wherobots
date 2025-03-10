@@ -2,6 +2,7 @@
 Define the Operators for triggering and monitoring the execution of Wherobots Run
 """
 
+import time
 from enum import auto
 from time import sleep
 from typing import Optional, Sequence, Any, Dict
@@ -26,6 +27,9 @@ class XComKey(StrEnum):
     run_id = auto()
 
 
+POST_RUN_POLL_LOGS_INTERVAL = 3.0
+
+
 class WherobotsRunOperator(BaseOperator):
     """
     Operator for triggering and monitoring the execution of Wherobots Run
@@ -45,6 +49,7 @@ class WherobotsRunOperator(BaseOperator):
         wherobots_conn_id: str = DEFAULT_CONN_ID,
         poll_logs: bool = False,
         timeout_seconds: int = 3600,
+        wait_post_run_logs_timeout_seconds: int = 60,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -66,6 +71,7 @@ class WherobotsRunOperator(BaseOperator):
         self.run_id: Optional[str] = None
         self.poll_logs = poll_logs
         self._logs_available = False
+        self.wait_post_run_logs_timeout_seconds = wait_post_run_logs_timeout_seconds
 
     @property
     def default_run_name(self) -> str:
@@ -123,16 +129,32 @@ class WherobotsRunOperator(BaseOperator):
             sleep(self._polling_interval)
             run = hook.get_run(run.ext_id)
         # If logs_cursor is still not None after run is ended, there are still logs to pull, we will pull them all.
-        while True:
-            # Sleep 3 sec to avoid too frequent polling
-            sleep(3)
-            next_cursor = self.poll_and_display_logs(hook, run, logs_cursor)
-            if next_cursor == logs_cursor:
-                break
-            else:
-                logs_cursor = next_cursor
+        self._tail_post_run_logs(hook, run, logs_cursor)
         self.log.info("=== Logs for Run %s End", run.ext_id)
         return run
+
+    def _tail_post_run_logs(
+        self, hook: WherobotsRestAPIHook, run: Run, last_cursor
+    ) -> None:
+        start_wait_time = None
+        while True:
+            # Sleep 3 sec to avoid too frequent polling
+            sleep(POST_RUN_POLL_LOGS_INTERVAL)
+            next_cursor = self.poll_and_display_logs(hook, run, last_cursor)
+            if next_cursor <= last_cursor:
+                if not start_wait_time:
+                    self.log.info(
+                        f"=== Waiting for all logs to be available for {self.wait_post_run_logs_timeout_seconds} seconds"
+                    )
+                    start_wait_time = int(time.time())
+                elif (
+                    int(time.time()) - start_wait_time
+                    >= self.wait_post_run_logs_timeout_seconds
+                ):
+                    break
+            else:
+                last_cursor = next_cursor
+                start_wait_time = None
 
     def _wait_run_simple(self, hook: WherobotsRestAPIHook, run: Run) -> Run:
         while run.status.is_active():

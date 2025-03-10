@@ -33,6 +33,7 @@ def test_prod_run_success(prod_conn: Connection, dag: DAG) -> None:
         },
         dag=dag,
         do_xcom_push=True,
+        wait_post_run_logs_timeout_seconds=10,
     )
     ti = build_ti(dag, task_id=operator.task_id)
     ti.run(ignore_ti_state=True)
@@ -52,6 +53,7 @@ def test_prod_run_timeout(prod_conn: Connection, dag: DAG) -> None:
         dag=dag,
         do_xcom_push=True,
         timeout_seconds=2,
+        wait_post_run_logs_timeout_seconds=10,
     )
     ti = build_ti(dag, task_id=operator.task_id)
     with pytest.raises(RuntimeError) as e:
