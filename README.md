@@ -152,11 +152,11 @@ from which you can build your ETLs and data transformation workflows by
 querying, manipulating, and producing datasets with WherobotsDB.
 
 Refer to the [Wherobots Documentation](https://docs.wherobots.com) and this
-[guidance](https://docs.wherobots.com/latest/tutorials/sedonadb/vector-data/vector-load/)
+[guidance](https://docs.wherobots.com/latest/tutorials/wherobotsdb/vector-data/vector-load/)
 to learn how to read data, transform data, and write results in Spatial SQL with
 WherobotsDB.
 
-Refer to the [Wherobots Apache Airflow Provider Documentation](https://docs.wherobots.com/latest/develop/airflow-provider)
+Refer to the [Wherobots Apache Airflow Provider Documentation](https://docs.wherobots.com/latest/develop/airflow-provider/)
 to get more detailed guidance about how to use the Wherobots Apache Airflow Provider.
 
 #### Example
