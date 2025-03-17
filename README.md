@@ -54,22 +54,29 @@ to learn more about how to upload and manage your code on Wherobots Cloud.
 Below is an example of `WherobotsRunOperator`
 
 ```python
-from airflow_providers_wherobots.operators.sql import WherobotsRunOperator
+from airflow_providers_wherobots.operators.run import WherobotsRunOperator
 
 from wherobots.db.region import Region
 from wherobots.db.runtime import Runtime
+from airflow import DAG
+import datetime
 
-operator = WherobotsRunOperator(
-        task_id="your_task_id",
-        name="airflow_operator_test_run_{{ ts_nodash }}",
-        region=Region.AWS_US_WEST_2,
-        runtime=Runtime.TINY_A10_GPU,
-        run_python={
-            "uri": "s3://wbts-wbc-m97rcg45xi/42ly7mi0p1/data/shared/classification.py"
-        },
-        dag=dag,
-        poll_logs=True,
-    )
+with DAG(
+    dag_id="example_wherobots_python_dag",
+    start_date=datetime.datetime.now(),
+    catchup=False
+):
+  operator = WherobotsRunOperator(
+          task_id="your_task_id",
+          name="airflow_operator_test_run_{{ ts_nodash }}",
+          region=Region.AWS_US_WEST_2,
+          runtime=Runtime.TINY_A10_GPU,
+          run_python={
+              "uri": "s3://wbts-wbc-m97rcg45xi/42ly7mi0p1/data/shared/classification.py"
+          },
+          dag=dag,
+          poll_logs=True,
+      )
 ```
 
 #### Arguments
