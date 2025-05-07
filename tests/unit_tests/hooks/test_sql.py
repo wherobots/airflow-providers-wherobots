@@ -26,5 +26,4 @@ class TestWherobotsSqlHook:
             region=Region.AWS_US_WEST_2,
             wait_timeout=hook.session_wait_timeout,
             read_timeout=hook.read_timeout,
-            reuse_session=True,
         )
