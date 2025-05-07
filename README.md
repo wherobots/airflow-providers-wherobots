@@ -78,24 +78,20 @@ The arguments for the `WherobotsRunOperator` constructor:
 
 * `region: Region`: The Wherobots region where runs are hosted.
   The values available can be found in `wherobots.db.region.Region`.
-  The default value is `Region.AWS_US_WEST_2` and this is the only region in which Wherobots Cloud operates workloads today.
-  > [!IMPORTANT]
-  > To prepare for the expansion of Wherobots Cloud to new regions and cloud providers, the `region` parameter will become mandatory in a future SDK version.
-  > Before this support for new regions is added, we will release an updated version of the SDK. 
-  > If you continue using an older SDK version, your existing Airflow tasks will still work.
-  > However, any new or existing job runs you create without specifying the `region` parameter will be hosted in the `aws-us-west-2` region.
 * `name: str`: The name of the run. If not specified, a default name will be
   generated.
 * `runtime: Runtime`: The runtime dictates the size and amount of resources
   powering the run. The default value is `Runtime.TINY`; see available values
   [here](https://github.com/wherobots/wherobots-python-dbapi/blob/main/wherobots/db/runtime.py).
-* `poll_logs: bool`: If `True`, the operator will poll and `Logger.info()` the run logs until the run finishes.
-  If `False`, the operator will not poll the logs, only track the status of the run.
+* `poll_logs: bool`: If `True`, the operator will poll and `Logger.info()` the run logs
+  until the run finishes. If `False`, the operator will not poll the logs, only track
+  the status of the run.
 * `polling_interval`: The interval in seconds to poll the status of the run.
   The default value is `30`.
-* `timeout_seconds: int`: This parameter sets a maximum run time (in seconds) to prevent runaway processes. 
-If the specified value exceeds the Max Workload Alive Hours, the timeout will be capped at the maximum permissible limit. 
-Defaults to `3600` seconds (1 hour).
+* `timeout_seconds: int`: This parameter sets a maximum run time (in
+  seconds) to prevent runaway processes. If the specified value exceeds the Max
+  Workload Alive Hours, the timeout will be capped at the maximum permissible limit.
+  Defaults to `3600` seconds (1 hour).
 * `run_python: dict`: A dictionary with the following keys:
   * `uri: str`: The URI of the Python file to run.
   * `args: list[str]`: A list of arguments to pass to the Python file.
@@ -108,8 +104,9 @@ Defaults to `3600` seconds (1 hour).
   * `sparkExecutorDiskGB: int`: The disk size for the Spark executor.
   * `sparkConfigs: dict`: A dictionary of Spark configurations.
   * `dependencies: list[dict]`: A list of dependant libraries to install.
-* `wait_post_run_logs_timeout_seconds: int`: Maximum duration (in seconds) the system waits for logs to become queryable after job completion. 
-The default value is `60` seconds.
+* `wait_post_run_logs_timeout_seconds: int`: Maximum duration (in
+  seconds) the system waits for logs to become queryable after job
+  completion. The default value is `60` seconds.
 
   For more detailed information about the `environment` parameter,
   refer to [Get Run Logs](https://docs.wherobots.com/latest/references/runs/#get-run-logs) in the Wherobots Documentation.
@@ -198,12 +195,6 @@ with DAG(
 
 * `region: Region`: The Wherobots Compute Region where the SQL query executions are hosted.
   The values available can be found in `wherobots.db.region.Region`.
-  The default value is `Region.AWS_US_WEST_2` and this is the only region in which Wherobots Cloud operates workloads today.
-  > [!IMPORTANT]
-  > To prepare for the expansion of Wherobots Cloud to new regions and cloud providers, the `region` parameter will become mandatory in a future SDK version.
-  > Before this support for new regions is added, we will release an updated version of the SDK. 
-  > If you continue using an older SDK version, your existing Airflow tasks will still work.
-  > However, any new or existing SQL queries that don't specify the `region` parameter will be hosted in the `aws-us-west-2` region.
 * `runtime: Runtime`: The runtime dictates the size and amount of resources
   powering the run. The default value is `Runtime.TINY`; see available values
   [here](https://github.com/wherobots/wherobots-python-dbapi/blob/main/wherobots/db/runtime.py).
