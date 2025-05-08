@@ -12,7 +12,6 @@ from wherobots.db import Runtime, Region
 from wherobots.db.constants import (
     DEFAULT_SESSION_WAIT_TIMEOUT_SECONDS,
     DEFAULT_READ_TIMEOUT_SECONDS,
-    DEFAULT_REUSE_SESSION,
     DEFAULT_RUNTIME,
 )
 from wherobots.db import Cursor as WDbCursor
@@ -46,7 +45,6 @@ class WherobotsSqlOperator(SQLExecuteQueryOperator):  # type: ignore[misc]
         runtime: Runtime = DEFAULT_RUNTIME,
         session_wait_timeout: int = DEFAULT_SESSION_WAIT_TIMEOUT_SECONDS,
         read_timeout: int = DEFAULT_READ_TIMEOUT_SECONDS,
-        reuse_session: bool = DEFAULT_REUSE_SESSION,
         **kwargs,
     ):
         super().__init__(
@@ -56,7 +54,6 @@ class WherobotsSqlOperator(SQLExecuteQueryOperator):  # type: ignore[misc]
         self.runtime = runtime
         self.session_wait_timeout = session_wait_timeout
         self.read_timeout = read_timeout
-        self.reuse_session = reuse_session
         self.region = region
 
     def get_db_hook(self) -> DbApiHook:
@@ -67,5 +64,4 @@ class WherobotsSqlOperator(SQLExecuteQueryOperator):  # type: ignore[misc]
             runtime=self.runtime,
             session_wait_timeout=self.session_wait_timeout,
             read_timeout=self.read_timeout,
-            reuse_session=self.reuse_session,
         )

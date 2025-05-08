@@ -10,7 +10,6 @@ from wherobots.db import Runtime, connect
 from wherobots.db.constants import (
     DEFAULT_SESSION_WAIT_TIMEOUT_SECONDS,
     DEFAULT_READ_TIMEOUT_SECONDS,
-    DEFAULT_REUSE_SESSION,
     DEFAULT_RUNTIME,
 )
 
@@ -27,7 +26,6 @@ class WherobotsSqlHook(DbApiHook):  # type: ignore[misc]
         runtime: Runtime = DEFAULT_RUNTIME,
         session_wait_timeout: int = DEFAULT_SESSION_WAIT_TIMEOUT_SECONDS,
         read_timeout: int = DEFAULT_READ_TIMEOUT_SECONDS,
-        reuse_session: bool = DEFAULT_REUSE_SESSION,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -35,7 +33,6 @@ class WherobotsSqlHook(DbApiHook):  # type: ignore[misc]
         self.runtime = runtime
         self.session_wait_timeout = session_wait_timeout
         self.read_timeout = read_timeout
-        self.reuse_session = reuse_session
         self.region = region
 
         self._conn = self.get_connection(self.wherobots_conn_id)
@@ -52,7 +49,6 @@ class WherobotsSqlHook(DbApiHook):  # type: ignore[misc]
             region=self.region,
             wait_timeout=self.session_wait_timeout,
             read_timeout=self.read_timeout,
-            reuse_session=self.reuse_session,
         )
 
     def get_conn(self) -> WDBConnection:
