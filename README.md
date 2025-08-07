@@ -83,6 +83,7 @@ The arguments for the `WherobotsRunOperator` constructor:
 * `runtime: Runtime`: The runtime dictates the size and amount of resources
   powering the run. The default value is `Runtime.TINY`; see available values
   [here](https://github.com/wherobots/wherobots-python-dbapi/blob/main/wherobots/db/runtime.py).
+* `version: str`: The WherobotsDB version to use. Defaults to `latest`.
 * `poll_logs: bool`: If `True`, the operator will poll and `Logger.info()` the run logs
   until the run finishes. If `False`, the operator will not poll the logs, only track
   the status of the run.

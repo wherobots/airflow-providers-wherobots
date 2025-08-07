@@ -236,3 +236,21 @@ class TestWherobotsRunOperator:
         operator._tail_post_run_logs(hook, test_run, 1)
         assert mocked_poll_method.call_count > 30
         operator._tail_post_run_logs(hook, test_run, 1)
+
+    @pytest.mark.usefixtures("clean_airflow_db")
+    def test_runtime_version_in_payload(self, mocker: MockerFixture, dag: DAG):
+        create_run: MagicMock = mocker.patch(
+            "airflow_providers_wherobots.hooks.rest_api.WherobotsRestAPIHook.create_run",
+            return_value=run_factory.build(status=RunStatus.COMPLETED),
+        )
+        operator = WherobotsRunOperator(
+            region=Region.AWS_US_WEST_2,
+            task_id="test_runtime_version",
+            name="test_run",
+            run_python={"uri": "s3://bucket/test.py"},
+            version="1.2.3",
+            dag=dag,
+        )
+        execute_dag(dag, task_id=operator.task_id)
+        rendered_payload = create_run.call_args.args[0]
+        assert rendered_payload["version"] == "1.2.3"
