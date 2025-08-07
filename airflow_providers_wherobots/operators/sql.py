@@ -43,6 +43,7 @@ class WherobotsSqlOperator(SQLExecuteQueryOperator):  # type: ignore[misc]
         region: Optional[Region] = None,
         wherobots_conn_id: str = DEFAULT_CONN_ID,
         runtime: Runtime = DEFAULT_RUNTIME,
+        version: Optional[str] = None,
         session_wait_timeout: int = DEFAULT_SESSION_WAIT_TIMEOUT_SECONDS,
         read_timeout: int = DEFAULT_READ_TIMEOUT_SECONDS,
         **kwargs,
@@ -52,6 +53,7 @@ class WherobotsSqlOperator(SQLExecuteQueryOperator):  # type: ignore[misc]
         )
         self.wherobots_conn_id = wherobots_conn_id
         self.runtime = runtime
+        self.version = version
         self.session_wait_timeout = session_wait_timeout
         self.read_timeout = read_timeout
         self.region = region
@@ -62,6 +64,7 @@ class WherobotsSqlOperator(SQLExecuteQueryOperator):  # type: ignore[misc]
             region=self.region,
             wherobots_conn_id=self.wherobots_conn_id,
             runtime=self.runtime,
+            version=self.version,
             session_wait_timeout=self.session_wait_timeout,
             read_timeout=self.read_timeout,
         )

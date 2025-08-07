@@ -42,6 +42,7 @@ class WherobotsRunOperator(BaseOperator):
         region: Optional[Region] = None,
         name: Optional[str] = None,
         runtime: Runtime = DEFAULT_RUNTIME,
+        version: Optional[str] = None,
         run_python: Optional[Dict[str, Any]] = None,
         run_jar: Optional[Dict[str, Any]] = None,
         environment: Optional[Dict[str, Any]] = None,
@@ -60,6 +61,8 @@ class WherobotsRunOperator(BaseOperator):
             "timeoutSeconds": timeout_seconds,
         }
         self.region = region
+        if version is not None:
+            self.run_payload["version"] = version
         if run_python:
             self.run_payload["runPython"] = run_python
         if run_jar:

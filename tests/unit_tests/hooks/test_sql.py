@@ -24,6 +24,7 @@ class TestWherobotsSqlHook:
             api_key="token",
             runtime=Runtime.LARGE,
             region=Region.AWS_US_WEST_2,
+            version=None,
             wait_timeout=hook.session_wait_timeout,
             read_timeout=hook.read_timeout,
         )
