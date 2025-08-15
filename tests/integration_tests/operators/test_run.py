@@ -48,7 +48,7 @@ def test_prod_run_timeout(prod_conn: Connection, dag: DAG) -> None:
         task_id="test_run_smoke",
         name="airflow_operator_test_run_{{ ts_nodash }}",
         run_python={
-            "uri": "s3://wbts-wbc-m97rcg45xi/42ly7mi0p1/data/shared/very_simple_job.py"
+            "uri": "s3://wbts-wbc-m97rcg45xi/42ly7mi0p1/data/shared/tile-generation-example.py"
         },
         dag=dag,
         do_xcom_push=True,
