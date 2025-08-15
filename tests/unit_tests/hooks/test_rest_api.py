@@ -43,24 +43,6 @@ def test_wherobots_auth() -> None:
 class TestModel(BaseModel):
     key: str
 
-@responses.activate
-def test_retry_after() -> None:
-    """
-    Test the retry_after method
-    """
-
-    responses.get(
-        url="https://example.com",
-        status=HTTPStatus.SERVICE_UNAVAILABLE,
-        headers={"Retry-After": "5.2"},
-    )
-    with requests.session() as session:
-        resp = session.get("https://example.com")
-        print("Hello world")
-        print(resp)
-        print(resp.headers)
-        print(resp.status_code)
-
 
 class TestWherobotsRestAPIHook:
     """
@@ -90,6 +72,8 @@ class TestWherobotsRestAPIHook:
         with WherobotsRestAPIHook() as hook:
             test_resp_json = hook._api_call("GET", "/test").json()
             test_model = TestModel.model_validate(test_resp_json)
+
+            assert 429 in hook.build_retry().status_forcelist
             assert test_model.key == "value"
             assert len(responses.calls) == 1
             assert responses.calls[0].request.url == url

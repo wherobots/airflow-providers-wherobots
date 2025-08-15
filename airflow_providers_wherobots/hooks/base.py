@@ -15,8 +15,6 @@ class WherobotsRetry(Retry):
         import re
 
         if re.match("^[-+]?[0-9]*\.[0-9]+$", retry_after):
-            print("hello from parse_retry_after inside the if")
             retry_after = str(math.ceil(float(retry_after)))
-        print("hello from parse_retry_after outside the if")
-        super().parse_retry_after(retry_after)
+        return super().parse_retry_after(retry_after)
 
