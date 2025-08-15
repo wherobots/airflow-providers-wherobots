@@ -18,7 +18,7 @@ from wherobots.db import Region
 
 from airflow_providers_wherobots.hooks.base import (
     DEFAULT_CONN_ID,
-    PACKAGE_NAME,
+    PACKAGE_NAME, WherobotsRetry,
 )
 from airflow_providers_wherobots.wherobots.models import (
     Run,
@@ -51,12 +51,15 @@ class WherobotsRestAPIHook(BaseHook):
         self.retry_limit = retry_limit
         self.retry_min_delay = retry_min_delay
         self.session = requests.Session()
-        retries = Retry(
+        self.session.mount("https://", HTTPAdapter(max_retries=self.build_retry()))
+
+    def build_retry(self):
+        return WherobotsRetry(
             total=self.retry_limit,
             backoff_factor=self.retry_min_delay,
-            status_forcelist=[500, 502, 503, 504],
+            status_forcelist=[500, 502, 503, 504, 429],
         )
-        self.session.mount("https://", HTTPAdapter(max_retries=retries))
+
 
     def __enter__(self):
         return self

@@ -72,6 +72,8 @@ class TestWherobotsRestAPIHook:
         with WherobotsRestAPIHook() as hook:
             test_resp_json = hook._api_call("GET", "/test").json()
             test_model = TestModel.model_validate(test_resp_json)
+
+            assert 429 in hook.build_retry().status_forcelist
             assert test_model.key == "value"
             assert len(responses.calls) == 1
             assert responses.calls[0].request.url == url
