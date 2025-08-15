@@ -29,13 +29,11 @@ def test_prod_run_success(prod_conn: Connection, dag: DAG) -> None:
         task_id="test_run_smoke",
         name="airflow_operator_test_run_{{ ts_nodash }}",
         run_python={
-            "uri": "s3://wbts-wbc-m97rcg45xi/dr0ceplidt/data/shared/integration-testing-test/airflow-home/scripts/Part_4_Spatial_Joins.py"
+            "uri": "s3://wbts-wbc-m97rcg45xi/42ly7mi0p1/data/shared/very_simple_job.py"
         },
         dag=dag,
-        poll_logs=True,
-        polling_interval=5,
         do_xcom_push=True,
-        wait_post_run_logs_timeout_seconds=30,
+        wait_post_run_logs_timeout_seconds=10,
     )
     ti = build_ti(dag, task_id=operator.task_id)
     ti.run(ignore_ti_state=True)
@@ -50,7 +48,7 @@ def test_prod_run_timeout(prod_conn: Connection, dag: DAG) -> None:
         task_id="test_run_smoke",
         name="airflow_operator_test_run_{{ ts_nodash }}",
         run_python={
-            "uri": "s3://wbts-wbc-m97rcg45xi/dr0ceplidt/data/shared/integration-testing-test/airflow-home/scripts/Part_4_Spatial_Joins.py"
+            "uri": "s3://wbts-wbc-m97rcg45xi/42ly7mi0p1/data/shared/very_simple_job.py"
         },
         dag=dag,
         do_xcom_push=True,
