@@ -3,11 +3,11 @@ The data models for the Wherobots API
 """
 
 import string
+from dataclasses import dataclass
 from datetime import datetime
 from enum import auto
 from typing import Optional, List
 
-from pydantic import BaseModel, Field, ConfigDict
 from strenum import StrEnum
 
 RUN_NAME_ALPHABET = string.ascii_letters + string.digits + "-_."
@@ -24,32 +24,31 @@ class RunStatus(StrEnum):
         return self in [self.PENDING, self.RUNNING]
 
 
-class WherobotsModel(BaseModel):
-    ext_id: str = Field(alias="id")
-    create_time: datetime = Field(alias="createTime")
-    update_time: datetime = Field(alias="updateTime")
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
-
-
-class KubeAppEvent(BaseModel):
+@dataclass
+class KubeAppEvent:
     code: str
     message: Optional[str] = None
 
 
-class KubeApp(BaseModel):
+@dataclass
+class KubeApp:
     events: List[KubeAppEvent]
 
 
-class Run(WherobotsModel):
+@dataclass
+class Run:
+    id: str
+    createTime: datetime
+    updateTime: datetime
     name: str
     status: RunStatus
-    start_time: Optional[datetime] = Field(default=None, alias="startTime")
-    end_time: Optional[datetime] = Field(default=None, alias="completeTime")
-    kube_app: Optional[KubeApp] = Field(default=None, alias="kubeApp")
+    startTime: Optional[datetime] = None
+    completeTime: Optional[datetime] = None
+    kubeApp: Optional[KubeApp] = None
 
     @property
     def is_timeout(self) -> bool:
-        if not self.kube_app or not self.kube_app.events:
+        if not self.kubeApp or not self.kubeApp.events:
             return False
         return any(
             (
@@ -57,16 +56,18 @@ class Run(WherobotsModel):
                 and event.message
                 and "timeout" in event.message.lower()
             )
-            for event in self.kube_app.events
+            for event in self.kubeApp.events
         )
 
 
-class LogItem(BaseModel):
+@dataclass
+class LogItem:
     timestamp: int
     raw: str
 
 
-class LogsResponse(BaseModel):
+@dataclass
+class LogsResponse:
     items: List[LogItem]
     current_page: int
     next_page: Optional[int] = None

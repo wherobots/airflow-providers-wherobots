@@ -169,7 +169,7 @@ class TestWherobotsRunOperator:
         # test xcom push
         if task_state == TaskInstanceState.SUCCESS:
             ti.xcom_push("key", "value")
-            assert ti.xcom_pull(key="run_id") == mocked_create_run.return_value.ext_id
+            assert ti.xcom_pull(key="run_id") == mocked_create_run.return_value.id
 
     def test_on_kill(
         self,
@@ -209,7 +209,7 @@ class TestWherobotsRunOperator:
             dag=DAG("test_poll_and_display_logs"),
         )
         assert operator.poll_and_display_logs(hook, test_run, 0) == 2
-        hook.get_run_logs.assert_called_with(test_run.ext_id, 0)
+        hook.get_run_logs.assert_called_with(test_run.id, 0)
 
     def test_wait_run_poll_logs(self, mocker: MockerFixture):
         hook = mocker.MagicMock()

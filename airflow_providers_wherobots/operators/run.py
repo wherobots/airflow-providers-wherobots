@@ -95,15 +95,15 @@ class WherobotsRunOperator(BaseOperator):
         """
         Poll the logs and display them
         """
-        log_resp = hook.get_run_logs(run.ext_id, start)
+        log_resp = hook.get_run_logs(run.id, start)
         if not self._logs_available:
             if log_resp.items:
                 self._logs_available = True
-                self.log.info("=== Logs for Run %s Start:", run.ext_id)
+                self.log.info("=== Logs for Run %s Start:", run.id)
             else:
                 self.log.info(
                     "Run %s status: %s, logs will start to stream once available",
-                    run.ext_id,
+                    run.id,
                     run.status.value,
                 )
         if not log_resp.items:
@@ -118,22 +118,22 @@ class WherobotsRunOperator(BaseOperator):
         return log_resp.next_page or last_item.timestamp
 
     def _log_run_status(self, run: Run):
-        self.log.info(f"Run {run.ext_id} status: {run.status}")
+        self.log.info(f"Run {run.id} status: {run.status}")
 
     def _wait_run_poll_logs(self, hook: WherobotsRestAPIHook, run: Run):
         logs_cursor: int = 0
         while run.status == RunStatus.PENDING:
             sleep(self._polling_interval)
-            run = hook.get_run(run.ext_id)
+            run = hook.get_run(run.id)
             self._log_run_status(run)
         while run.status == RunStatus.RUNNING:
             # Pull the run logs
             logs_cursor = self.poll_and_display_logs(hook, run, logs_cursor)
             sleep(self._polling_interval)
-            run = hook.get_run(run.ext_id)
+            run = hook.get_run(run.id)
         # If logs_cursor is still not None after run is ended, there are still logs to pull, we will pull them all.
         self._tail_post_run_logs(hook, run, logs_cursor)
-        self.log.info("=== Logs for Run %s End", run.ext_id)
+        self.log.info("=== Logs for Run %s End", run.id)
         return run
 
     def _tail_post_run_logs(
@@ -162,7 +162,7 @@ class WherobotsRunOperator(BaseOperator):
     def _wait_run_simple(self, hook: WherobotsRestAPIHook, run: Run) -> Run:
         while run.status.is_active():
             sleep(self._polling_interval)
-            run = hook.get_run(run.ext_id)
+            run = hook.get_run(run.id)
             self._log_run_status(run)
         return run
 
@@ -177,9 +177,9 @@ class WherobotsRunOperator(BaseOperator):
             )
             run = rest_api_hook.create_run(self.run_payload, self.region)
             if self.do_xcom_push and context:
-                self.xcom_push(context, key=XComKey.run_id, value=run.ext_id)
-            self.run_id = run.ext_id
-            self.log.info(f"Run {run.ext_id} created")
+                self.xcom_push(context, key=XComKey.run_id, value=run.id)
+            self.run_id = run.id
+            self.log.info(f"Run {run.id} created")
             # wait for the run ends
             if self.poll_logs:
                 run = self._wait_run_poll_logs(rest_api_hook, run)
@@ -190,10 +190,10 @@ class WherobotsRunOperator(BaseOperator):
             if run.status == RunStatus.FAILED:
                 # check events, see if the run is timeout
                 if run.is_timeout:
-                    raise RuntimeError(f"Run {run.ext_id} failed due to timeout")
-                raise RuntimeError(f"Run {run.ext_id} failed, please check the logs")
+                    raise RuntimeError(f"Run {run.id} failed due to timeout")
+                raise RuntimeError(f"Run {run.id} failed, please check the logs")
             if run.status == RunStatus.CANCELLED:
-                raise RuntimeError(f"Run {run.ext_id} was cancelled by user")
+                raise RuntimeError(f"Run {run.id} was cancelled by user")
 
     def on_kill(self) -> None:
         """

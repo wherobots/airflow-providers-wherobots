@@ -4,11 +4,11 @@ Test the REST API hooks.
 
 import json
 from http import HTTPStatus
+from dataclasses import asdict, dataclass
 
 import airflow
 import requests
 import responses
-from pydantic import BaseModel
 from pytest_mock import MockerFixture
 from responses import matchers
 from wherobots.db import Runtime, Region
@@ -22,6 +22,10 @@ from airflow_providers_wherobots.wherobots.models import (
     LogsResponse,
 )
 from tests.unit_tests import helpers
+
+
+def dataclass_to_json(data):
+    return json.dumps(asdict(data), default=str)
 
 
 @responses.activate
@@ -40,7 +44,8 @@ def test_wherobots_auth() -> None:
         assert resp.status_code == HTTPStatus.OK
 
 
-class TestModel(BaseModel):
+@dataclass
+class TestModel:
     key: str
 
 
@@ -71,7 +76,7 @@ class TestWherobotsRestAPIHook:
         )
         with WherobotsRestAPIHook() as hook:
             test_resp_json = hook._api_call("GET", "/test").json()
-            test_model = TestModel.model_validate(test_resp_json)
+            test_model = TestModel(**test_resp_json)
             assert test_model.key == "value"
             assert len(responses.calls) == 1
             assert responses.calls[0].request.url == url
@@ -86,9 +91,8 @@ class TestWherobotsRestAPIHook:
         Test the get_run method
         """
         test_run: Run = helpers.run_factory.build()
-        url = f"https://{test_default_conn.host}/runs/{test_run.ext_id}"
-        payload: dict = json.loads(test_run.model_dump_json())
-        payload.update({"extra_field": "random"})
+        url = f"https://{test_default_conn.host}/runs/{test_run.id}"
+        payload: dict = json.loads(dataclass_to_json(test_run))
         responses.add(
             responses.GET,
             url,
@@ -96,8 +100,8 @@ class TestWherobotsRestAPIHook:
             status=HTTPStatus.OK,
         )
         with WherobotsRestAPIHook() as hook:
-            fetched_run = hook.get_run(test_run.ext_id)
-            assert fetched_run.ext_id == test_run.ext_id
+            fetched_run = hook.get_run(test_run.id)
+            assert fetched_run.id == test_run.id
             assert fetched_run.status == test_run.status
 
     @responses.activate
@@ -120,7 +124,7 @@ class TestWherobotsRestAPIHook:
         responses.add(
             responses.POST,
             url,
-            json=test_run.model_dump(mode="json"),
+            body=dataclass_to_json(test_run),
             match=[matchers.json_params_matcher(create_payload)],
             status=HTTPStatus.OK,
         )
@@ -133,18 +137,18 @@ class TestWherobotsRestAPIHook:
         Test the get_run method
         """
         test_run: Run = helpers.run_factory.build()
-        url = f"https://{test_default_conn.host}/runs/{test_run.ext_id}/logs"
+        url = f"https://{test_default_conn.host}/runs/{test_run.id}/logs"
         responses.add(
             responses.GET,
             url,
-            json=LogsResponse(items=[], current_page=12345, next_page=None).model_dump(
-                mode="json"
+            body=dataclass_to_json(
+                LogsResponse(items=[], current_page=12345, next_page=None)
             ),
             match=[matchers.query_param_matcher({"cursor": 12345, "size": 500})],
             status=HTTPStatus.OK,
         )
         with WherobotsRestAPIHook() as hook:
-            hook.get_run_logs(run_id=test_run.ext_id, start=12345)
+            hook.get_run_logs(run_id=test_run.id, start=12345)
 
     @responses.activate
     def test_cancel_run(self, test_default_conn) -> None:
@@ -152,14 +156,14 @@ class TestWherobotsRestAPIHook:
         Test the cancel_run method
         """
         test_run: Run = helpers.run_factory.build()
-        url = f"https://{test_default_conn.host}/runs/{test_run.ext_id}/cancel"
+        url = f"https://{test_default_conn.host}/runs/{test_run.id}/cancel"
         responses.add(
             responses.POST,
             url,
             status=HTTPStatus.OK,
         )
         with WherobotsRestAPIHook() as hook:
-            hook.cancel_run(run_id=test_run.ext_id)
+            hook.cancel_run(run_id=test_run.id)
 
     def test_user_agent(self, test_default_conn, mocker: MockerFixture) -> None:
         """

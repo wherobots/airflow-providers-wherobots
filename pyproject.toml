@@ -7,7 +7,6 @@ requires-python = ">=3.9, <3.13"
 readme = "README.md"
 dependencies = [
     "wherobots-python-dbapi>=0.18.0",
-    "pydantic~=2.3",
 ]
 
 [project.urls]

@@ -3,6 +3,7 @@ Hook for Wherobots' HTTP API
 """
 
 import platform
+from dataclasses import fields
 from functools import cached_property
 from typing import Any, Optional, Dict
 
@@ -23,6 +24,9 @@ from airflow_providers_wherobots.hooks.base import (
 from airflow_providers_wherobots.wherobots.models import (
     Run,
     LogsResponse,
+    RunStatus,
+    KubeApp,
+    KubeAppEvent,
 )
 
 
@@ -107,7 +111,20 @@ class WherobotsRestAPIHook(BaseHook):
 
     def get_run(self, run_id: str) -> Run:
         resp_json = self._api_call("GET", f"/runs/{run_id}").json()
-        return Run.model_validate(resp_json)
+        run_fields = [f.name for f in fields(Run)]
+        run_args = {k: v for k, v in resp_json.items() if k in run_fields}
+        run_args["status"] = RunStatus(run_args["status"])
+        if "kubeApp" in run_args and run_args["kubeApp"]:
+            kube_app_fields = [f.name for f in fields(KubeApp)]
+            kube_app_args = {
+                k: v for k, v in run_args["kubeApp"].items() if k in kube_app_fields
+            }
+            if "events" in kube_app_args and kube_app_args["events"]:
+                kube_app_args["events"] = [
+                    KubeAppEvent(**e) for e in kube_app_args["events"]
+                ]
+            run_args["kubeApp"] = KubeApp(**kube_app_args)
+        return Run(**run_args)
 
     def create_run(self, payload: Dict[str, Any], region: Region) -> Run:
         resp_json = self._api_call(
@@ -116,7 +133,20 @@ class WherobotsRestAPIHook(BaseHook):
             payload=payload,
             params={"region": region.value},
         ).json()
-        return Run.model_validate(resp_json)
+        run_fields = [f.name for f in fields(Run)]
+        run_args = {k: v for k, v in resp_json.items() if k in run_fields}
+        run_args["status"] = RunStatus(run_args["status"])
+        if "kubeApp" in run_args and run_args["kubeApp"]:
+            kube_app_fields = [f.name for f in fields(KubeApp)]
+            kube_app_args = {
+                k: v for k, v in run_args["kubeApp"].items() if k in kube_app_fields
+            }
+            if "events" in kube_app_args and kube_app_args["events"]:
+                kube_app_args["events"] = [
+                    KubeAppEvent(**e) for e in kube_app_args["events"]
+                ]
+            run_args["kubeApp"] = KubeApp(**kube_app_args)
+        return Run(**run_args)
 
     def cancel_run(self, run_id: str) -> None:
         self._api_call("POST", f"/runs/{run_id}/cancel")
@@ -124,4 +154,4 @@ class WherobotsRestAPIHook(BaseHook):
     def get_run_logs(self, run_id: str, start: int, size: int = 500) -> LogsResponse:
         params = {"cursor": start, "size": size}
         resp_json = self._api_call("GET", f"/runs/{run_id}/logs", params=params).json()
-        return LogsResponse.model_validate(resp_json)
+        return LogsResponse(**resp_json)

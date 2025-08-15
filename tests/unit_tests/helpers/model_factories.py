@@ -2,9 +2,9 @@
 helper functions for tests
 """
 
-from polyfactory.factories.pydantic_factory import ModelFactory
+from polyfactory.factories.dataclass_factory import DataclassFactory
 
 from airflow_providers_wherobots.wherobots.models import Run
 
 
-class RunFactory(ModelFactory[Run]): ...
+class RunFactory(DataclassFactory[Run]): ...
