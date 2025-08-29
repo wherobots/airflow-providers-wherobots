@@ -1,12 +1,12 @@
 [project]
 name = "airflow-providers-wherobots"
-version = "1.4.1"
+version = "1.4.2"
 description = "Airflow extension for communicating with Wherobots Cloud"
 authors = [{ name = "zongsi.zhang", email = "zongsi@wherobots.com" }]
 requires-python = ">=3.9, <3.13"
 readme = "README.md"
 dependencies = [
-    "wherobots-python-dbapi>=0.18.0",
+    "wherobots-python-dbapi>=0.19.0",
     "pydantic~=2.3",
 ]
 
