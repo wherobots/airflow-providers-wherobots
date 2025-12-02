@@ -16,7 +16,7 @@ from airflow_providers_wherobots.operators import warn_for_default_region
 from airflow_providers_wherobots.wherobots.models import (
     RUN_NAME_ALPHABET,
     RunStatus,
-    Run,
+    Run, LogProcessor,
 )
 
 from wherobots.db import Runtime, Region
@@ -75,6 +75,7 @@ class WherobotsRunOperator(BaseOperator):
         self.poll_logs = poll_logs
         self._logs_available = False
         self.wait_post_run_logs_timeout_seconds = wait_post_run_logs_timeout_seconds
+        self.log_processor = LogProcessor()
 
     @property
     def default_run_name(self) -> str:
@@ -114,7 +115,8 @@ class WherobotsRunOperator(BaseOperator):
             # We don't repeatedly print a log item
             log_resp.items = log_resp.items[1:]
         for log_item in log_resp.items:
-            self.log.info(f"Log: {log_item.raw}")
+            log_level = self.log_processor.process_line(log_item.raw)
+            self.log.log(log_level, log_item.raw)
         return log_resp.next_page or last_item.timestamp
 
     def _log_run_status(self, run: Run):

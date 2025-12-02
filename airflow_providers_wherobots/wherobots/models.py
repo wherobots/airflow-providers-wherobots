@@ -1,7 +1,7 @@
 """
 The data models for the Wherobots API
 """
-
+import logging
 import string
 from datetime import datetime
 from enum import auto
@@ -70,3 +70,55 @@ class LogsResponse(BaseModel):
     items: List[LogItem]
     current_page: int
     next_page: Optional[int] = None
+
+class LogProcessor:
+    """
+    Stateless log parser.
+    Determines log level based strictly on the content of the current line and naively tracking of stack traces.
+    """
+
+    # memory optimization
+    __slots__ = ('_trace_remaining', '_in_trace')
+
+    def __init__(self):
+        self._in_trace = False
+        self._trace_remaining = 0
+
+    def process_line(self, line: str) -> int:
+        """
+        Analyzes a log line to determine its priority level.
+
+        Returns: logging.LEVEL (int)
+
+        TODO add a smarter way to correctly log stack traces
+        """
+
+        # Scanning only the first 75 chars
+        header = line[:75]
+
+        # Handle multi-line traces
+        if self._in_trace and self._trace_remaining > 0:
+            self._trace_remaining -= 1
+            return logging.ERROR
+
+        # Priority: Specific Spark/Java Exceptions
+        # If detected, log next 3 lines as ERROR
+        if "AnalysisException" in header or \
+                "ParseException" in header or \
+                "Py4JJavaError" in header or \
+           "Traceback (most recent call last):" in header:
+            # return next 3 lines as error when this is detected
+            self._in_trace = True
+            self._trace_remaining = 3
+            return logging.ERROR
+
+        # Standard Log Levels
+        if "ERROR" in header: return logging.ERROR
+        if "WARN" in header: return logging.WARNING
+        if "WARNING" in header: return logging.WARNING
+        if "DEBUG" in header: return logging.DEBUG
+        if "CRITICAL" in header: return logging.CRITICAL
+        if "INFO" in header: return logging.INFO
+
+        # Default fallback
+        return logging.INFO
