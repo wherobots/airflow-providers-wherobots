@@ -275,9 +275,9 @@ class TestStreamLogProcessor:
             ("CRITICAL", logging.CRITICAL),
             ("random stuff here without level", logging.INFO),
             ("py4j.protocol.Py4JJavaError: An error occurred while calling", logging.ERROR),
-            ("should be error 1", logging.ERROR),
-            ("should be error 2", logging.ERROR),
-            ("should be error 3", logging.ERROR),
+            ("shouldn't be error 1", logging.INFO),
+            ("shouldn't be error 2", logging.INFO),
+            ("shouldn't be error 3", logging.INFO),
             ("shouldn't be error", logging.INFO),
         ],
     )

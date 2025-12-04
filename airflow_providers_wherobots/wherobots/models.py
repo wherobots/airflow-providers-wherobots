@@ -74,15 +74,8 @@ class LogsResponse(BaseModel):
 class LogProcessor:
     """
     Stateless log parser.
-    Determines log level based strictly on the content of the current line and naively tracking of stack traces.
+    Determines log level based strictly on the content of the current line.
     """
-
-    # memory optimization
-    __slots__ = ('_trace_remaining', '_in_trace')
-
-    def __init__(self):
-        self._in_trace = False
-        self._trace_remaining = 0
 
     def process_line(self, line: str) -> int:
         """
@@ -96,20 +89,11 @@ class LogProcessor:
         # Scanning only the first 75 chars
         header = line[:75]
 
-        # Handle multi-line traces
-        if self._in_trace and self._trace_remaining > 0:
-            self._trace_remaining -= 1
-            return logging.ERROR
-
         # Priority: Specific Spark/Java Exceptions
-        # If detected, log next 3 lines as ERROR
         if "AnalysisException" in header or \
                 "ParseException" in header or \
                 "Py4JJavaError" in header or \
            "Traceback (most recent call last):" in header:
-            # return next 3 lines as error when this is detected
-            self._in_trace = True
-            self._trace_remaining = 3
             return logging.ERROR
 
         # Standard Log Levels
