@@ -4,6 +4,7 @@ Test the operators in run module
 
 import datetime
 import itertools
+import logging
 import uuid
 from typing import Tuple, List
 from unittest.mock import MagicMock
@@ -23,7 +24,7 @@ from airflow_providers_wherobots.wherobots.models import (
     RunStatus,
     LogsResponse,
     Run,
-    LogItem,
+    LogItem, LogProcessor,
 )
 from tests.unit_tests import helpers
 from tests.unit_tests.helpers import run_factory
@@ -254,3 +255,34 @@ class TestWherobotsRunOperator:
         execute_dag(dag, task_id=operator.task_id)
         rendered_payload = create_run.call_args.args[0]
         assert rendered_payload["version"] == "1.2.3"
+
+class TestStreamLogProcessor:
+
+    @pytest.fixture(scope="class")
+    def stream_log_processor(self):
+        """
+            Create a single StreamLogProcessor instance for all tests in this class.
+        """
+        return LogProcessor()
+
+    @pytest.mark.parametrize(
+        "line, expected_level",
+        [
+            ("INFO warn", logging.INFO),
+            ("WARN", logging.WARN),
+            ("DEBUG", logging.DEBUG),
+            ("ERROR", logging.ERROR),
+            ("CRITICAL", logging.CRITICAL),
+            ("random stuff here without level", logging.INFO),
+            ("py4j.protocol.Py4JJavaError: An error occurred while calling", logging.ERROR),
+            ("shouldn't be error 1", logging.INFO),
+            ("shouldn't be error 2", logging.INFO),
+            ("shouldn't be error 3", logging.INFO),
+            ("shouldn't be error", logging.INFO),
+        ],
+    )
+    def test_process_line_detects_levels(self, stream_log_processor, line, expected_level):
+        """
+            Ensure StreamLogProcessor maps log lines to the expected logging level.
+        """
+        assert stream_log_processor.process_line(line) == expected_level
