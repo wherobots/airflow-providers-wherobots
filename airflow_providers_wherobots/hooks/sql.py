@@ -53,7 +53,7 @@ class WherobotsSqlHook(DbApiHook):  # type: ignore[misc]
     ) -> WDBConnection:
         return connect(
             host=self._conn.host,
-            api_key=self._conn.get_password(),
+            api_key=self._conn.password,
             runtime=runtime,
             region=self.region,
             version=self.version,
