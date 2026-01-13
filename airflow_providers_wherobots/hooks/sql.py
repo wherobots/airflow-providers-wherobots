@@ -36,7 +36,6 @@ class WherobotsSqlHook(DbApiHook):  # type: ignore[misc]
         self.session_wait_timeout = session_wait_timeout
         self.read_timeout = read_timeout
         self.region = region
-
         self._conn = self.get_connection(self.wherobots_conn_id)
         self._db_conn: Optional[WDBConnection] = None
 
@@ -46,7 +45,7 @@ class WherobotsSqlHook(DbApiHook):  # type: ignore[misc]
     ) -> WDBConnection:
         return connect(
             host=self._conn.host,
-            api_key=self._conn.get_password(),
+            api_key=self._conn.password,
             runtime=runtime,
             region=self.region,
             version=self.version,
