@@ -8,13 +8,16 @@ from typing import Sequence, Optional
 
 from airflow.providers.common.sql.hooks.sql import DbApiHook
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-from wherobots.db import Runtime, Region
 from wherobots.db.constants import (
     DEFAULT_SESSION_WAIT_TIMEOUT_SECONDS,
     DEFAULT_READ_TIMEOUT_SECONDS,
     DEFAULT_RUNTIME,
+    DEFAULT_SESSION_TYPE,
 )
 from wherobots.db import Cursor as WDbCursor
+from wherobots.db.region import Region
+from wherobots.db.runtime import Runtime
+from wherobots.db.session_type import SessionType
 from pandas.core.frame import DataFrame
 
 from airflow_providers_wherobots.hooks.sql import WherobotsSqlHook
@@ -46,6 +49,8 @@ class WherobotsSqlOperator(SQLExecuteQueryOperator):  # type: ignore[misc]
         version: Optional[str] = None,
         session_wait_timeout: int = DEFAULT_SESSION_WAIT_TIMEOUT_SECONDS,
         read_timeout: int = DEFAULT_READ_TIMEOUT_SECONDS,
+        force_new: bool = False,
+        session_type: SessionType = DEFAULT_SESSION_TYPE,
         **kwargs,
     ):
         super().__init__(
@@ -57,6 +62,8 @@ class WherobotsSqlOperator(SQLExecuteQueryOperator):  # type: ignore[misc]
         self.session_wait_timeout = session_wait_timeout
         self.read_timeout = read_timeout
         self.region = region
+        self.force_new = force_new
+        self.session_type = session_type
 
     def get_db_hook(self) -> DbApiHook:
         self.region = warn_for_default_region(self.region)
@@ -67,4 +74,6 @@ class WherobotsSqlOperator(SQLExecuteQueryOperator):  # type: ignore[misc]
             version=self.version,
             session_wait_timeout=self.session_wait_timeout,
             read_timeout=self.read_timeout,
+            force_new=self.force_new,
+            session_type=self.session_type,
         )
