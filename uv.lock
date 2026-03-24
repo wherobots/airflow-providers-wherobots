@@ -116,7 +116,6 @@ version = "1.5.1"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic" },
-    { name = "requests" },
     { name = "wherobots-python-dbapi" },
 ]
 
@@ -136,7 +135,6 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pydantic", specifier = "~=2.3" },
-    { name = "requests", specifier = ">=2" },
     { name = "wherobots-python-dbapi", specifier = ">=0.25.4" },
 ]
 
