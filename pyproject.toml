@@ -6,7 +6,7 @@ authors = [{ name = "zongsi.zhang", email = "zongsi@wherobots.com" }]
 requires-python = ">=3.10, <3.13"
 readme = "README.md"
 dependencies = [
-    "wherobots-python-dbapi>=0.25.1",
+    "wherobots-python-dbapi>=0.25.4",
     "pydantic~=2.3",
     "requests>=2",
 ]

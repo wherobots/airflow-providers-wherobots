@@ -137,7 +137,7 @@ dev = [
 requires-dist = [
     { name = "pydantic", specifier = "~=2.3" },
     { name = "requests", specifier = ">=2" },
-    { name = "wherobots-python-dbapi", specifier = ">=0.25.1" },
+    { name = "wherobots-python-dbapi", specifier = ">=0.25.4" },
 ]
 
 [package.metadata.requires-dev]
@@ -2873,7 +2873,7 @@ wheels = [
 
 [[package]]
 name = "wherobots-python-dbapi"
-version = "0.25.1"
+version = "0.25.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cbor2" },
@@ -2887,9 +2887,9 @@ dependencies = [
     { name = "types-requests" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4d/ae/44b4898ccc71ec069b2e5cc50feb68607d6a620aab087573b5518af26619/wherobots_python_dbapi-0.25.1.tar.gz", hash = "sha256:d21a19671a245f9eb0121e97cce17f010eb68c34020f4fd67b832b95382a6ead", size = 18774 }
+sdist = { url = "https://files.pythonhosted.org/packages/51/a8/804e94d58431fdd5a80ca9e1ca6fc43231a6d75e4636d1d90fc9911cbc96/wherobots_python_dbapi-0.25.4.tar.gz", hash = "sha256:c4be0efbc7a5b23b4d999de07028de63ffff1674dba05757c91eacc6db257664", size = 19990 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0d/17/8c48012b8bedebbfdab7c4a2b712400f4c17d7f95b86810336f1b18f1ed9/wherobots_python_dbapi-0.25.1-py3-none-any.whl", hash = "sha256:480aafb13215c0590548f13cb3debbdc0b709d6fbbac21140a2f665c30684efe", size = 21788 },
+    { url = "https://files.pythonhosted.org/packages/30/a7/6a6a570e735e7a4b7cf915d9f89a617172225de35006c0208e20a8ca1ce4/wherobots_python_dbapi-0.25.4-py3-none-any.whl", hash = "sha256:00c872a973b1d95aa2a5d962e013b8f1cf2e89abea9de53884adb2e946da7878", size = 23012 },
 ]
 
 [[package]]
