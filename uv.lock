@@ -112,7 +112,7 @@ wheels = [
 
 [[package]]
 name = "airflow-providers-wherobots"
-version = "1.5.1"
+version = "1.6.0"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic" },
@@ -135,7 +135,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pydantic", specifier = "~=2.3" },
-    { name = "wherobots-python-dbapi", specifier = ">=0.25.4" },
+    { name = "wherobots-python-dbapi", specifier = ">=0.26.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -2871,7 +2871,7 @@ wheels = [
 
 [[package]]
 name = "wherobots-python-dbapi"
-version = "0.25.4"
+version = "0.26.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cbor2" },
@@ -2885,9 +2885,9 @@ dependencies = [
     { name = "types-requests" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/51/a8/804e94d58431fdd5a80ca9e1ca6fc43231a6d75e4636d1d90fc9911cbc96/wherobots_python_dbapi-0.25.4.tar.gz", hash = "sha256:c4be0efbc7a5b23b4d999de07028de63ffff1674dba05757c91eacc6db257664", size = 19990 }
+sdist = { url = "https://files.pythonhosted.org/packages/62/3d/3f20294e447f012878c1c1f471eb1c82d5fff9bde8a1a22ea60db67cd541/wherobots_python_dbapi-0.26.0.tar.gz", hash = "sha256:a2635d9b0742296e902ffb87038b623d4e251f643a6e8048f983ac06132af7e0", size = 20003 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/30/a7/6a6a570e735e7a4b7cf915d9f89a617172225de35006c0208e20a8ca1ce4/wherobots_python_dbapi-0.25.4-py3-none-any.whl", hash = "sha256:00c872a973b1d95aa2a5d962e013b8f1cf2e89abea9de53884adb2e946da7878", size = 23012 },
+    { url = "https://files.pythonhosted.org/packages/1f/d7/e73944c0d050d657676acace53956eb186d90f6cb3344bc70b6460c6d961/wherobots_python_dbapi-0.26.0-py3-none-any.whl", hash = "sha256:4ee83f23770fb95808fec1c5431775dba7065439f298f3e6cc9939a9338aed6b", size = 23022 },
 ]
 
 [[package]]
