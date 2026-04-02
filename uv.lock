@@ -112,7 +112,7 @@ wheels = [
 
 [[package]]
 name = "airflow-providers-wherobots"
-version = "1.5.3"
+version = "1.6.0"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic" },
