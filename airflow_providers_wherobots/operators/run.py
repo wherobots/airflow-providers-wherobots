@@ -192,10 +192,13 @@ class WherobotsRunOperator(BaseOperator):
                 run = self._wait_run_simple(rest_api_hook, run)
             # loop end, means run is in terminal state
             self._log_run_status(run)
+            # The API may report a timeout either as an explicit TIMED_OUT
+            # status or as FAILED with a timeout event.
+            if run.status == RunStatus.TIMED_OUT or (
+                run.status == RunStatus.FAILED and run.is_timeout
+            ):
+                raise RuntimeError(f"Run {run.ext_id} failed due to timeout")
             if run.status == RunStatus.FAILED:
-                # check events, see if the run is timeout
-                if run.is_timeout:
-                    raise RuntimeError(f"Run {run.ext_id} failed due to timeout")
                 raise RuntimeError(f"Run {run.ext_id} failed, please check the logs")
             if run.status == RunStatus.CANCELLED:
                 raise RuntimeError(f"Run {run.ext_id} was cancelled by user")
