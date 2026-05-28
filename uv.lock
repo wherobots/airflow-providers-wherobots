@@ -113,7 +113,7 @@ wheels = [
 
 [[package]]
 name = "airflow-providers-wherobots"
-version = "1.6.0"
+version = "1.7.0"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic" },
@@ -136,7 +136,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pydantic", specifier = "~=2.3" },
-    { name = "wherobots-python-dbapi", specifier = ">=0.26.1" },
+    { name = "wherobots-python-dbapi", specifier = ">=0.28.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -2869,7 +2869,7 @@ wheels = [
 
 [[package]]
 name = "wherobots-python-dbapi"
-version = "0.26.1"
+version = "0.28.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cbor2" },
@@ -2883,9 +2883,9 @@ dependencies = [
     { name = "types-requests" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8e/ba/c16051ad0a58e4a7b7dd34dd117b60b49715e9f152fed738df62f98c8f5b/wherobots_python_dbapi-0.26.1.tar.gz", hash = "sha256:df6369766437fd316a79e48b98c3f8e9a9b297059e19df80bc7c075a5a148439", size = 20086, upload-time = "2026-04-21T17:07:08.315Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/93/65/6404abb4c2b8304b7653852797e8084114a2b943bcd6ba2abf2369ce41b8/wherobots_python_dbapi-0.28.0.tar.gz", hash = "sha256:6c157677e6d7078a395f02a185df83379fb9a8749908947ae71db22e0d0d9af9", size = 21050, upload-time = "2026-05-28T18:21:11.703Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/09/e1/df621d2e411346c3b000a72a77e07f3a4d38ce46dc880145130eb29b44ad/wherobots_python_dbapi-0.26.1-py3-none-any.whl", hash = "sha256:c1e2f67f0d6c0110078c51a11df591f01b86f7b18eec4727e05beeefcc572457", size = 23124, upload-time = "2026-04-21T17:07:06.466Z" },
+    { url = "https://files.pythonhosted.org/packages/a5/03/8adb81b736b30e6a70e87d3de90bb7a054be5ca664ed41303ade99fceecf/wherobots_python_dbapi-0.28.0-py3-none-any.whl", hash = "sha256:bfefa57ffac357beab5106ebdfd4a629d1ae8bb64c0137a3450767a321b2bbbf", size = 24167, upload-time = "2026-05-28T18:21:10.381Z" },
 ]
 
 [[package]]
