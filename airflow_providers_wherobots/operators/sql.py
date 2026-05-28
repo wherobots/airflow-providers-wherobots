@@ -4,14 +4,13 @@ Operator for firing sql queries and collect results to s3
 
 from __future__ import annotations
 
-from typing import Sequence, Optional
+from typing import Sequence, Optional, Union
 
 from airflow.providers.common.sql.hooks.sql import DbApiHook
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from wherobots.db.constants import (
     DEFAULT_SESSION_WAIT_TIMEOUT_SECONDS,
     DEFAULT_READ_TIMEOUT_SECONDS,
-    DEFAULT_RUNTIME,
     DEFAULT_SESSION_TYPE,
 )
 from wherobots.db import Cursor as WDbCursor
@@ -43,9 +42,9 @@ class WherobotsSqlOperator(SQLExecuteQueryOperator):  # type: ignore[misc]
     def __init__(  # type: ignore[no-untyped-def]
         self,
         *,
-        region: Optional[Region] = None,
+        region: Optional[Union[str, Region]] = None,
         wherobots_conn_id: str = DEFAULT_CONN_ID,
-        runtime: Runtime = DEFAULT_RUNTIME,
+        runtime: Optional[Union[str, Runtime]] = None,
         version: Optional[str] = None,
         session_wait_timeout: int = DEFAULT_SESSION_WAIT_TIMEOUT_SECONDS,
         read_timeout: int = DEFAULT_READ_TIMEOUT_SECONDS,

@@ -123,6 +123,13 @@ class TestWherobotsRunOperator:
                 (
                     [
                         run_factory.build(status=RunStatus.RUNNING),
+                        run_factory.build(status=RunStatus.TIMED_OUT),
+                    ],
+                    TaskInstanceState.FAILED,
+                ),
+                (
+                    [
+                        run_factory.build(status=RunStatus.RUNNING),
                         run_factory.build(status=RunStatus.COMPLETED),
                     ],
                     TaskInstanceState.SUCCESS,

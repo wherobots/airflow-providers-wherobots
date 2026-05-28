@@ -76,13 +76,17 @@ operator = WherobotsRunOperator(
 
 The arguments for the `WherobotsRunOperator` constructor:
 
-* `region: Region`: The Wherobots region where runs are hosted.
-  The values available can be found in `wherobots.db.region.Region`.
+* `region: str | Region`: The Wherobots region where runs are hosted. Accepts a
+  `Region` enum value (see `wherobots.db.region.Region`) or a raw string (a BYOC
+  region is passed through as-is). Optional — when omitted, your organization's
+  configured default region is used. Only set it to override that default.
 * `name: str`: The name of the run. If not specified, a default name will be
   generated.
-* `runtime: Runtime`: The runtime dictates the size and amount of resources
-  powering the run. The default value is `Runtime.TINY`; see available values
-  [here](https://github.com/wherobots/wherobots-python-dbapi/blob/main/wherobots/db/runtime.py).
+* `runtime: str | Runtime`: The runtime dictates the size and amount of resources
+  powering the run. Accepts a `Runtime` enum value (see available values
+  [here](https://github.com/wherobots/wherobots-python-dbapi/blob/main/wherobots/db/runtime.py))
+  or a raw string. Optional — when omitted, your organization's configured
+  default runtime is used.
 * `version: str`: The WherobotsDB version to use. Defaults to `latest`.
 * `poll_logs: bool`: If `True`, the operator will poll and `Logger.info()` the run logs
   until the run finishes. If `False`, the operator will not poll the logs, only track

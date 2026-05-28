@@ -19,6 +19,7 @@ class RunStatus(StrEnum):
     FAILED = auto()
     COMPLETED = auto()
     CANCELLED = auto()
+    TIMED_OUT = auto()
 
     def is_active(self) -> bool:
         return self in [self.PENDING, self.RUNNING]
@@ -49,6 +50,8 @@ class Run(WherobotsModel):
 
     @property
     def is_timeout(self) -> bool:
+        if self.status == RunStatus.TIMED_OUT:
+            return True
         if not self.kube_app or not self.kube_app.events:
             return False
         return any(

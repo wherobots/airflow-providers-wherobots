@@ -4,7 +4,7 @@ Hook for Wherobots' HTTP API
 
 import platform
 from functools import cached_property
-from typing import Any, Optional, Dict
+from typing import Any, Optional, Dict, Union
 
 import requests
 from importlib import metadata
@@ -112,12 +112,18 @@ class WherobotsRestAPIHook(BaseHook):
         resp_json = self._api_call("GET", f"/runs/{run_id}").json()
         return Run.model_validate(resp_json)
 
-    def create_run(self, payload: Dict[str, Any], region: Region) -> Run:
+    def create_run(
+        self, payload: Dict[str, Any], region: Optional[Union[str, Region]] = None
+    ) -> Run:
+        # Normalize enum -> value, pass strings through, and omit region
+        # entirely when unset so the API applies the org default.
+        region_value = region.value if isinstance(region, Region) else region
+        params = {"region": region_value} if region_value else {}
         resp_json = self._api_call(
             "POST",
             "/runs",
             payload=payload,
-            params={"region": region.value},
+            params=params,
         ).json()
         return Run.model_validate(resp_json)
 

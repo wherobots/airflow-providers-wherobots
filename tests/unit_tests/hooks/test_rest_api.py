@@ -130,6 +130,38 @@ class TestWherobotsRestAPIHook:
             hook.create_run(payload=create_payload, region=Region.AWS_US_WEST_2)
 
     @responses.activate
+    def test_create_run_omits_region_when_none(self, test_default_conn) -> None:
+        """When region is None, no region query param is sent (API uses org default)."""
+        test_run: Run = helpers.run_factory.build()
+        url = f"https://{test_default_conn.host}/runs"
+        create_payload = {"name": test_run.name, "timeoutSeconds": 5000}
+        responses.add(
+            responses.POST,
+            url,
+            json=test_run.model_dump(mode="json"),
+            match=[matchers.query_string_matcher("")],
+            status=HTTPStatus.OK,
+        )
+        with WherobotsRestAPIHook() as hook:
+            hook.create_run(payload=create_payload, region=None)
+
+    @responses.activate
+    def test_create_run_passes_string_region(self, test_default_conn) -> None:
+        """A raw region string (e.g. a BYOC region) is passed through as-is."""
+        test_run: Run = helpers.run_factory.build()
+        url = f"https://{test_default_conn.host}/runs"
+        create_payload = {"name": test_run.name, "timeoutSeconds": 5000}
+        responses.add(
+            responses.POST,
+            url,
+            json=test_run.model_dump(mode="json"),
+            match=[matchers.query_param_matcher({"region": "byoc-acme-us-east-1"})],
+            status=HTTPStatus.OK,
+        )
+        with WherobotsRestAPIHook() as hook:
+            hook.create_run(payload=create_payload, region="byoc-acme-us-east-1")
+
+    @responses.activate
     def test_get_run_logs(self, test_default_conn) -> None:
         """
         Test the get_run method

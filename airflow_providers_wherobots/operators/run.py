@@ -5,7 +5,7 @@ Define the Operators for triggering and monitoring the execution of Wherobots Ru
 import time
 from enum import auto
 from time import sleep
-from typing import Optional, Sequence, Any, Dict
+from typing import Optional, Sequence, Any, Dict, Union
 
 from airflow.models import BaseOperator
 from strenum import StrEnum
@@ -20,7 +20,6 @@ from airflow_providers_wherobots.wherobots.models import (
 )
 
 from wherobots.db import Runtime, Region
-from wherobots.db.constants import DEFAULT_RUNTIME
 
 
 class XComKey(StrEnum):
@@ -39,9 +38,9 @@ class WherobotsRunOperator(BaseOperator):
 
     def __init__(
         self,
-        region: Optional[Region] = None,
+        region: Optional[Union[str, Region]] = None,
         name: Optional[str] = None,
-        runtime: Runtime = DEFAULT_RUNTIME,
+        runtime: Optional[Union[str, Runtime]] = None,
         version: Optional[str] = None,
         run_python: Optional[Dict[str, Any]] = None,
         run_jar: Optional[Dict[str, Any]] = None,
@@ -56,10 +55,14 @@ class WherobotsRunOperator(BaseOperator):
         super().__init__(**kwargs)
         # If the user specifies the name, we will use it and rely on the server to validate the name
         self.run_payload: Dict[str, Any] = {
-            "runtime": runtime.value,
             "name": name or self.default_run_name,
             "timeoutSeconds": timeout_seconds,
         }
+        # Only include runtime when set; otherwise the API uses the org default.
+        if runtime is not None:
+            self.run_payload["runtime"] = (
+                runtime.value if isinstance(runtime, Runtime) else runtime
+            )
         self.region = region
         if version is not None:
             self.run_payload["version"] = version
@@ -189,10 +192,13 @@ class WherobotsRunOperator(BaseOperator):
                 run = self._wait_run_simple(rest_api_hook, run)
             # loop end, means run is in terminal state
             self._log_run_status(run)
+            # The API may report a timeout either as an explicit TIMED_OUT
+            # status or as FAILED with a timeout event.
+            if run.status == RunStatus.TIMED_OUT or (
+                run.status == RunStatus.FAILED and run.is_timeout
+            ):
+                raise RuntimeError(f"Run {run.ext_id} failed due to timeout")
             if run.status == RunStatus.FAILED:
-                # check events, see if the run is timeout
-                if run.is_timeout:
-                    raise RuntimeError(f"Run {run.ext_id} failed due to timeout")
                 raise RuntimeError(f"Run {run.ext_id} failed, please check the logs")
             if run.status == RunStatus.CANCELLED:
                 raise RuntimeError(f"Run {run.ext_id} was cancelled by user")
