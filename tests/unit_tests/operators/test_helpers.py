@@ -8,8 +8,10 @@ class TestWarnForDefaultRegion:
         # No region -> None so the API applies the organization's default.
         assert warn_for_default_region(None) is None
 
-    def test_enum_is_normalized_to_value(self) -> None:
-        assert warn_for_default_region(Region.AWS_US_WEST_2) == "aws-us-west-2"
+    def test_enum_is_passed_through_unchanged(self) -> None:
+        # Normalization happens at the request boundary, not here, so the enum
+        # still works with older dbapi releases that call region.value.
+        assert warn_for_default_region(Region.AWS_US_WEST_2) is Region.AWS_US_WEST_2
 
     def test_string_is_passed_through(self) -> None:
         assert warn_for_default_region("byoc-acme-us-east-1") == "byoc-acme-us-east-1"

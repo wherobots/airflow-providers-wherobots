@@ -6,13 +6,17 @@ from wherobots.db import Region
 logger = logging.getLogger(__name__)
 
 
-def warn_for_default_region(region: Optional[Union[str, Region]]) -> Optional[str]:
-    """Normalize a region argument to the string sent to the Wherobots API.
+def warn_for_default_region(
+    region: Optional[Union[str, Region]],
+) -> Optional[Union[str, Region]]:
+    """Resolve the region argument for a Wherobots operator.
 
-    Accepts a ``Region`` enum or a raw string (e.g. a BYOC region), which is
-    passed through as-is. When no region is provided, returns ``None`` so the
-    API applies the organization's configured default region — only set
-    ``region`` to override that default with a specific region.
+    The value is returned unchanged — a ``Region`` enum or a raw string (e.g. a
+    BYOC region). Normalization (enum -> value) happens at the request boundary
+    (``WherobotsRestAPIHook.create_run`` / ``wherobots.db.connect``), so the enum
+    keeps working with older ``wherobots-python-dbapi`` releases. When no region
+    is provided, returns ``None`` so the API applies the organization's
+    configured default region — only set ``region`` to override that default.
     """
     if not region:
         logger.info(
@@ -20,4 +24,4 @@ def warn_for_default_region(region: Optional[Union[str, Region]]) -> Optional[st
             "configured default region. Pass `region` to override it."
         )
         return None
-    return region.value if isinstance(region, Region) else region
+    return region
