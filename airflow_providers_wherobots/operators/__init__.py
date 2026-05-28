@@ -18,7 +18,7 @@ def warn_for_default_region(
     is provided, returns ``None`` so the API applies the organization's
     configured default region — only set ``region`` to override that default.
     """
-    if not region:
+    if region is None:
         logger.info(
             "No region specified; the Wherobots API will use your organization's "
             "configured default region. Pass `region` to override it."

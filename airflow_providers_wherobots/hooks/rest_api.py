@@ -118,7 +118,7 @@ class WherobotsRestAPIHook(BaseHook):
         # Normalize enum -> value, pass strings through, and omit region
         # entirely when unset so the API applies the org default.
         region_value = region.value if isinstance(region, Region) else region
-        params = {"region": region_value} if region_value else {}
+        params = {"region": region_value} if region_value is not None else {}
         resp_json = self._api_call(
             "POST",
             "/runs",

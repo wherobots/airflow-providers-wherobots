@@ -162,6 +162,22 @@ class TestWherobotsRestAPIHook:
             hook.create_run(payload=create_payload, region="byoc-acme-us-east-1")
 
     @responses.activate
+    def test_create_run_passes_empty_string_region(self, test_default_conn) -> None:
+        """An empty-string region is forwarded to the API, not silently dropped."""
+        test_run: Run = helpers.run_factory.build()
+        url = f"https://{test_default_conn.host}/runs"
+        create_payload = {"name": test_run.name, "timeoutSeconds": 5000}
+        responses.add(
+            responses.POST,
+            url,
+            json=test_run.model_dump(mode="json"),
+            match=[matchers.query_string_matcher("region=")],
+            status=HTTPStatus.OK,
+        )
+        with WherobotsRestAPIHook() as hook:
+            hook.create_run(payload=create_payload, region="")
+
+    @responses.activate
     def test_get_run_logs(self, test_default_conn) -> None:
         """
         Test the get_run method

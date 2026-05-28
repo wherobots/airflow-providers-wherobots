@@ -15,3 +15,8 @@ class TestWarnForDefaultRegion:
 
     def test_string_is_passed_through(self) -> None:
         assert warn_for_default_region("byoc-acme-us-east-1") == "byoc-acme-us-east-1"
+
+    def test_empty_string_is_passed_through(self) -> None:
+        # "" is a caller mistake worth surfacing to the API, not silently
+        # dropped as if no region were provided.
+        assert warn_for_default_region("") == ""
