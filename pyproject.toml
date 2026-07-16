@@ -16,7 +16,7 @@ Tracker = "https://github.com/wherobots/airflow-provider-wherobots"
 
 [dependency-groups]
 dev = [
-    "apache-airflow>=2.7.0,<3",
+    "apache-airflow>=2.7.0,<4",
     "pytest>=8.1.1,<9",
     "requests-mock>=1.12.1,<2",
     "aioresponses>=0.7.4,<0.8",
