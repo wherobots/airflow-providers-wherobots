@@ -4,6 +4,7 @@ Test the REST API hooks.
 
 import json
 from http import HTTPStatus
+from importlib import metadata
 
 import airflow
 import requests
@@ -13,10 +14,15 @@ from pytest_mock import MockerFixture
 from responses import matchers
 from wherobots.db import Runtime, Region
 
+from airflow_providers_wherobots.client_attribution import (
+    CLIENT_HOP,
+    WHEROBOTS_CLIENT_HEADER,
+)
 from airflow_providers_wherobots.hooks.rest_api import (
     WherobotsAuth,
     WherobotsRestAPIHook,
 )
+from airflow_providers_wherobots.hooks.base import PACKAGE_NAME
 from airflow_providers_wherobots.wherobots.models import (
     Run,
     LogsResponse,
@@ -194,6 +200,31 @@ class TestWherobotsRestAPIHook:
         )
         with WherobotsRestAPIHook() as hook:
             hook.cancel_run(run_id=test_run.ext_id)
+
+    @responses.activate
+    def test_api_call_sends_client_attribution_header(self, test_default_conn) -> None:
+        """Every REST call carries this provider's origin hop."""
+        url = f"https://{test_default_conn.host}/test"
+        responses.add(
+            responses.GET,
+            url,
+            json={},
+            status=HTTPStatus.OK,
+            match=[matchers.header_matcher({WHEROBOTS_CLIENT_HEADER: CLIENT_HOP})],
+        )
+        with WherobotsRestAPIHook() as hook:
+            hook._api_call("GET", "/test")
+
+        sent = responses.calls[0].request.headers[WHEROBOTS_CLIENT_HEADER]
+        assert sent == f"client=airflow;ver={metadata.version(PACKAGE_NAME)}"
+
+    def test_default_headers_keep_the_user_agent(self, test_default_conn) -> None:
+        """Client attribution is additive: the User-Agent is still sent."""
+        with WherobotsRestAPIHook() as hook:
+            assert hook.default_headers == {
+                **hook.user_agent_header,
+                WHEROBOTS_CLIENT_HEADER: CLIENT_HOP,
+            }
 
     def test_user_agent(self, test_default_conn, mocker: MockerFixture) -> None:
         """

@@ -2,7 +2,8 @@
 Hook for Wherobots' Spatial SQL API interface.
 """
 
-from typing import Optional, Union
+import inspect
+from typing import Any, Dict, Final, Optional, Union
 
 from airflow.providers.common.sql.hooks.sql import DbApiHook
 from wherobots.db import Connection as WDBConnection, connect
@@ -15,7 +16,23 @@ from wherobots.db.region import Region
 from wherobots.db.runtime import Runtime
 from wherobots.db.session_type import SessionType
 
+from airflow_providers_wherobots.client_attribution import client_attribution_header
 from airflow_providers_wherobots.hooks.base import DEFAULT_CONN_ID
+
+# This hook reaches the platform through the Python DB-API driver rather than
+# directly. The driver appends its own `client=dbapi;ver=...` hop to any
+# inbound `X-Wherobots-Client` chain, so handing it our hop via `extra_headers`
+# keeps Airflow as the leftmost (origin) hop instead of letting the driver look
+# like the origin.
+#
+# `extra_headers` is newer than this provider's `wherobots-python-dbapi>=0.28.0`
+# floor, so it is probed rather than assumed: against an older driver the
+# provider still works and simply loses the Airflow hop. Delete this probe and
+# pass the argument unconditionally once the floor is raised to a release that
+# has it.
+_CONNECT_SUPPORTS_EXTRA_HEADERS: Final[bool] = (
+    "extra_headers" in inspect.signature(connect).parameters
+)
 
 
 class WherobotsSqlHook(DbApiHook):  # type: ignore[misc]
@@ -50,6 +67,11 @@ class WherobotsSqlHook(DbApiHook):  # type: ignore[misc]
         self,
         runtime: Optional[Union[str, Runtime]] = None,
     ) -> WDBConnection:
+        attribution: Dict[str, Any] = (
+            {"extra_headers": client_attribution_header()}
+            if _CONNECT_SUPPORTS_EXTRA_HEADERS
+            else {}
+        )
         return connect(
             host=self._conn.host,
             api_key=self._conn.password,
@@ -60,6 +82,7 @@ class WherobotsSqlHook(DbApiHook):  # type: ignore[misc]
             read_timeout=self.read_timeout,
             force_new=self.force_new,
             session_type=self.session_type,
+            **attribution,
         )
 
     def get_conn(self) -> WDBConnection:

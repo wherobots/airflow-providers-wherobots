@@ -16,6 +16,7 @@ from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
 from wherobots.db import Region
 
+from airflow_providers_wherobots.client_attribution import client_attribution_header
 from airflow_providers_wherobots.hooks.base import (
     DEFAULT_CONN_ID,
     PACKAGE_NAME,
@@ -85,6 +86,15 @@ class WherobotsRestAPIHook(BaseHook):
         )
         return {"User-Agent": header_value}
 
+    @cached_property
+    def default_headers(self) -> Dict[str, str]:
+        """Headers sent on every REST API request.
+
+        The hook talks to the platform directly, so it is the origin hop of the
+        advisory ``X-Wherobots-Client`` chain.
+        """
+        return {**self.user_agent_header, **client_attribution_header()}
+
     def _api_call(
         self,
         method: str,
@@ -100,7 +110,7 @@ class WherobotsRestAPIHook(BaseHook):
             json=payload,
             auth=auth,
             params=params,
-            headers=self.user_agent_header,
+            headers=self.default_headers,
         )
         try:
             resp.raise_for_status()
