@@ -12,13 +12,14 @@ from airflow.version import version as airflow_version
 from airflow.hooks.base import BaseHook
 from airflow.models import Connection
 from requests import PreparedRequest, Response
-from requests.adapters import HTTPAdapter, Retry
+from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
 from wherobots.db import Region
 
 from airflow_providers_wherobots.hooks.base import (
     DEFAULT_CONN_ID,
-    PACKAGE_NAME, WherobotsRetry,
+    PACKAGE_NAME,
+    WherobotsRetry,
 )
 from airflow_providers_wherobots.wherobots.models import (
     Run,
@@ -59,7 +60,6 @@ class WherobotsRestAPIHook(BaseHook):
             backoff_factor=self.retry_min_delay,
             status_forcelist=[500, 502, 503, 504, 429],
         )
-
 
     def __enter__(self):
         return self
