@@ -20,7 +20,21 @@ from airflow_providers_wherobots.hooks.sql import WherobotsSqlHook
 
 class TestWherobotsSqlHook:
     @mock.patch("airflow_providers_wherobots.hooks.sql.connect")
-    def test_get_conn(self, mock_connect: MagicMock, test_default_conn: Connection):
+    def test_get_conn(
+        self,
+        mock_connect: MagicMock,
+        test_default_conn: Connection,
+        mocker: MockerFixture,
+    ):
+        # The exact-kwargs assertion below omits `extra_headers`, so the probe
+        # is pinned rather than inherited from whatever driver dependency
+        # resolution happened to install. Attribution has its own two tests;
+        # this one is about the connection arguments.
+        mocker.patch(
+            "airflow_providers_wherobots.hooks.sql._CONNECT_SUPPORTS_EXTRA_HEADERS",
+            False,
+        )
+
         # Instantiate hook
         hook = WherobotsSqlHook(
             runtime=Runtime.LARGE,
