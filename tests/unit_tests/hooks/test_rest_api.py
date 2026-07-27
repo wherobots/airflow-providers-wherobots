@@ -240,8 +240,8 @@ class TestWherobotsRestAPIHook:
                 return_value="3.8.10",
             )
             mocker.patch(
-                "airflow_providers_wherobots.hooks.rest_api.metadata.version",
-                return_value="1.2.3",
+                "airflow_providers_wherobots.hooks.rest_api.PROVIDER_VERSION",
+                "1.2.3",
             )
             assert hook.user_agent_header == {
                 "User-Agent": f"airflow-providers-wherobots/1.2.3 os/linux python/3.8.10 airflow/{airflow.__version__}"

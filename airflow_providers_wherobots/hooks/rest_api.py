@@ -7,7 +7,6 @@ from functools import cached_property
 from typing import Any, Optional, Dict, Union
 
 import requests
-from importlib import metadata
 from airflow.version import version as airflow_version
 from airflow.hooks.base import BaseHook
 from airflow.models import Connection
@@ -16,7 +15,10 @@ from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
 from wherobots.db import Region
 
-from airflow_providers_wherobots.client_attribution import client_attribution_header
+from airflow_providers_wherobots.client_attribution import (
+    PROVIDER_VERSION,
+    client_attribution_header,
+)
 from airflow_providers_wherobots.hooks.base import (
     DEFAULT_CONN_ID,
     PACKAGE_NAME,
@@ -74,10 +76,9 @@ class WherobotsRestAPIHook(BaseHook):
 
     @cached_property
     def user_agent_header(self):
-        try:
-            package_version = metadata.version(PACKAGE_NAME)
-        except metadata.PackageNotFoundError:
-            package_version = "unknown"
+        # PROVIDER_VERSION is the same lookup with the same `unknown` fallback,
+        # resolved once at import instead of on each first access here.
+        package_version = PROVIDER_VERSION
         python_version = platform.python_version()
         system = platform.system().lower()
         header_value = (

@@ -3,6 +3,7 @@ Hook for Wherobots' Spatial SQL API interface.
 """
 
 import inspect
+import logging
 from typing import Any, Dict, Final, Optional, Union
 
 from airflow.providers.common.sql.hooks.sql import DbApiHook
@@ -16,7 +17,10 @@ from wherobots.db.region import Region
 from wherobots.db.runtime import Runtime
 from wherobots.db.session_type import SessionType
 
-from airflow_providers_wherobots.client_attribution import client_attribution_header
+from airflow_providers_wherobots.client_attribution import (
+    WHEROBOTS_CLIENT_HEADER,
+    client_attribution_header,
+)
 from airflow_providers_wherobots.hooks.base import DEFAULT_CONN_ID
 
 # This hook reaches the platform through the Python DB-API driver rather than
@@ -33,6 +37,17 @@ from airflow_providers_wherobots.hooks.base import DEFAULT_CONN_ID
 _CONNECT_SUPPORTS_EXTRA_HEADERS: Final[bool] = (
     "extra_headers" in inspect.signature(connect).parameters
 )
+
+if not _CONNECT_SUPPORTS_EXTRA_HEADERS:
+    # Losing attribution is silent by design -- it must never fail a
+    # connection -- but silent and undiscoverable are different things. This is
+    # the one line that explains an Airflow-driven query showing up in the
+    # platform's analytics attributed to the driver instead of to Airflow.
+    logging.getLogger(__name__).debug(
+        "Installed wherobots-python-dbapi has no `extra_headers` argument; "
+        "omitting the %s hop for SQL connections.",
+        WHEROBOTS_CLIENT_HEADER,
+    )
 
 
 class WherobotsSqlHook(DbApiHook):  # type: ignore[misc]

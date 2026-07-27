@@ -36,7 +36,9 @@ def test_header_name_and_hop_format() -> None:
 def test_hop_is_within_the_length_bound() -> None:
     """The chain is bounded to 512 bytes, and tokens to 64 characters."""
     assert len(CLIENT_HOP.encode("utf-8")) <= 512
-    assert len("airflow") <= 64
+    # Asserted against the constant, not a copy of its current value, so that
+    # renaming the token to something over-long would actually fail here.
+    assert len(client_attribution.CLIENT_TOKEN) <= 64
 
 
 def test_unresolvable_version_falls_back_to_unknown(mocker: MockerFixture) -> None:
