@@ -7,18 +7,22 @@ from functools import cached_property
 from typing import Any, Optional, Dict, Union
 
 import requests
-from importlib import metadata
 from airflow.version import version as airflow_version
 from airflow.hooks.base import BaseHook
 from airflow.models import Connection
 from requests import PreparedRequest, Response
-from requests.adapters import HTTPAdapter, Retry
+from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
 from wherobots.db import Region
 
+from airflow_providers_wherobots.client_attribution import (
+    PROVIDER_VERSION,
+    client_attribution_header,
+)
 from airflow_providers_wherobots.hooks.base import (
     DEFAULT_CONN_ID,
-    PACKAGE_NAME, WherobotsRetry,
+    PACKAGE_NAME,
+    WherobotsRetry,
 )
 from airflow_providers_wherobots.wherobots.models import (
     Run,
@@ -60,7 +64,6 @@ class WherobotsRestAPIHook(BaseHook):
             status_forcelist=[500, 502, 503, 504, 429],
         )
 
-
     def __enter__(self):
         return self
 
@@ -73,10 +76,9 @@ class WherobotsRestAPIHook(BaseHook):
 
     @cached_property
     def user_agent_header(self):
-        try:
-            package_version = metadata.version(PACKAGE_NAME)
-        except metadata.PackageNotFoundError:
-            package_version = "unknown"
+        # PROVIDER_VERSION is the same lookup with the same `unknown` fallback,
+        # resolved once at import instead of on each first access here.
+        package_version = PROVIDER_VERSION
         python_version = platform.python_version()
         system = platform.system().lower()
         header_value = (
@@ -84,6 +86,15 @@ class WherobotsRestAPIHook(BaseHook):
             f" python/{python_version} airflow/{airflow_version}"
         )
         return {"User-Agent": header_value}
+
+    @cached_property
+    def default_headers(self) -> Dict[str, str]:
+        """Headers sent on every REST API request.
+
+        The hook talks to the platform directly, so it is the origin hop of the
+        advisory ``X-Wherobots-Client`` chain.
+        """
+        return {**self.user_agent_header, **client_attribution_header()}
 
     def _api_call(
         self,
@@ -100,7 +111,7 @@ class WherobotsRestAPIHook(BaseHook):
             json=payload,
             auth=auth,
             params=params,
-            headers=self.user_agent_header,
+            headers=self.default_headers,
         )
         try:
             resp.raise_for_status()
