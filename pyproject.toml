@@ -15,8 +15,11 @@ Homepage = "https://github.com/wherobots/airflow-provider-wherobots"
 Tracker = "https://github.com/wherobots/airflow-provider-wherobots"
 
 [dependency-groups]
-dev = [
-    "apache-airflow>=2.7.0,<3",
+# Airflow itself is not a runtime dependency: users bring their own Airflow.
+# `test` holds the Airflow-agnostic tooling so CI can run the suite against
+# other Airflow versions (see .github/workflows/run_tests.yaml); `dev` adds the
+# Airflow version pinned in uv.lock.
+test = [
     "pytest>=9.0.3,<10",
     "requests-mock>=1.12.1,<2",
     "aioresponses>=0.7.9,<0.8",
@@ -24,6 +27,11 @@ dev = [
     "responses>=0.26.3,<0.27",
     "pytest-mock>=3.17.0,<4",
     "polyfactory>=3.5.0,<4",
+]
+dev = [
+    { include-group = "test" },
+    "apache-airflow>=3.3.1,<4",
+    "apache-airflow-providers-common-sql>=1.20",
     "mypy>=2.4.1",
 ]
 
