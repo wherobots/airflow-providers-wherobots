@@ -24,7 +24,8 @@ from airflow_providers_wherobots.wherobots.models import (
     RunStatus,
     LogsResponse,
     Run,
-    LogItem, LogProcessor,
+    LogItem,
+    LogProcessor,
 )
 from tests.unit_tests import helpers
 from tests.unit_tests.helpers import run_factory
@@ -106,35 +107,37 @@ class TestWherobotsRunOperator:
     @pytest.mark.usefixtures("clean_airflow_db")
     @pytest.mark.parametrize(
         "poll_logs,test_item",
-        itertools.product(
-            [False, True],
-            [
-                (
-                    [
-                        run_factory.build(status=RunStatus.RUNNING),
-                        run_factory.build(status=RunStatus.FAILED),
-                    ],
-                    TaskInstanceState.FAILED,
-                ),
-                (
-                    [run_factory.build(status=RunStatus.CANCELLED)],
-                    TaskInstanceState.FAILED,
-                ),
-                (
-                    [
-                        run_factory.build(status=RunStatus.RUNNING),
-                        run_factory.build(status=RunStatus.TIMED_OUT),
-                    ],
-                    TaskInstanceState.FAILED,
-                ),
-                (
-                    [
-                        run_factory.build(status=RunStatus.RUNNING),
-                        run_factory.build(status=RunStatus.COMPLETED),
-                    ],
-                    TaskInstanceState.SUCCESS,
-                ),
-            ],
+        list(
+            itertools.product(
+                [False, True],
+                [
+                    (
+                        [
+                            run_factory.build(status=RunStatus.RUNNING),
+                            run_factory.build(status=RunStatus.FAILED),
+                        ],
+                        TaskInstanceState.FAILED,
+                    ),
+                    (
+                        [run_factory.build(status=RunStatus.CANCELLED)],
+                        TaskInstanceState.FAILED,
+                    ),
+                    (
+                        [
+                            run_factory.build(status=RunStatus.RUNNING),
+                            run_factory.build(status=RunStatus.TIMED_OUT),
+                        ],
+                        TaskInstanceState.FAILED,
+                    ),
+                    (
+                        [
+                            run_factory.build(status=RunStatus.RUNNING),
+                            run_factory.build(status=RunStatus.COMPLETED),
+                        ],
+                        TaskInstanceState.SUCCESS,
+                    ),
+                ],
+            )
         ),
     )
     def test_execute_handle_states(
@@ -263,12 +266,13 @@ class TestWherobotsRunOperator:
         rendered_payload = create_run.call_args.args[0]
         assert rendered_payload["version"] == "1.2.3"
 
-class TestStreamLogProcessor:
 
+class TestStreamLogProcessor:
     @pytest.fixture(scope="class")
-    def stream_log_processor(self):
+    @staticmethod
+    def stream_log_processor():
         """
-            Create a single StreamLogProcessor instance for all tests in this class.
+        Create a single StreamLogProcessor instance for all tests in this class.
         """
         return LogProcessor()
 
@@ -281,15 +285,20 @@ class TestStreamLogProcessor:
             ("ERROR", logging.ERROR),
             ("CRITICAL", logging.CRITICAL),
             ("random stuff here without level", logging.INFO),
-            ("py4j.protocol.Py4JJavaError: An error occurred while calling", logging.ERROR),
+            (
+                "py4j.protocol.Py4JJavaError: An error occurred while calling",
+                logging.ERROR,
+            ),
             ("shouldn't be error 1", logging.INFO),
             ("shouldn't be error 2", logging.INFO),
             ("shouldn't be error 3", logging.INFO),
             ("shouldn't be error", logging.INFO),
         ],
     )
-    def test_process_line_detects_levels(self, stream_log_processor, line, expected_level):
+    def test_process_line_detects_levels(
+        self, stream_log_processor, line, expected_level
+    ):
         """
-            Ensure StreamLogProcessor maps log lines to the expected logging level.
+        Ensure StreamLogProcessor maps log lines to the expected logging level.
         """
         assert stream_log_processor.process_line(line) == expected_level

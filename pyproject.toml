@@ -34,3 +34,6 @@ build-backend = "hatchling.build"
 [tool.mypy]
 strict = true
 show_error_codes = true
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
