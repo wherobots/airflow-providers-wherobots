@@ -34,7 +34,7 @@ class WherobotsRunOperator(BaseOperator):
     Operator for triggering and monitoring the execution of Wherobots Run
     """
 
-    template_fields: Sequence[str] = "run_payload"
+    template_fields: Sequence[str] = ("run_payload",)
 
     def __init__(
         self,
