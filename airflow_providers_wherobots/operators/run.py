@@ -7,16 +7,17 @@ from enum import auto
 from time import sleep
 from typing import Optional, Sequence, Any, Dict, Union
 
-from airflow.models import BaseOperator
 from strenum import StrEnum
 
+from airflow_providers_wherobots._compat import BaseOperator
 from airflow_providers_wherobots.hooks.base import DEFAULT_CONN_ID
 from airflow_providers_wherobots.hooks.rest_api import WherobotsRestAPIHook
 from airflow_providers_wherobots.operators import warn_for_default_region
 from airflow_providers_wherobots.wherobots.models import (
     RUN_NAME_ALPHABET,
     RunStatus,
-    Run, LogProcessor,
+    Run,
+    LogProcessor,
 )
 
 from wherobots.db import Runtime, Region
