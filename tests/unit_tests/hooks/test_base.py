@@ -36,6 +36,7 @@ def test_retry_after() -> None:
             assert resp.status_code == HTTPStatus.TOO_MANY_REQUESTS
             assert "Max retries exceeded with url" in str(exception.value)
 
+
 def generate_retry_after_date(delay_seconds):
     """
     Generates a future date string in RFC 1123 format for Retry-After header.
@@ -48,7 +49,7 @@ def generate_retry_after_date(delay_seconds):
     """
 
     # Get the current time in UTC
-    current_time = datetime.datetime.now(datetime.UTC)
+    current_time = datetime.datetime.now(datetime.timezone.utc)
 
     # Add the specified delay
     future_time = current_time + datetime.timedelta(seconds=delay_seconds)
