@@ -54,7 +54,7 @@ to learn more about how to upload and manage your code on Wherobots Cloud.
 Below is an example of `WherobotsRunOperator`
 
 ```python
-from airflow_providers_wherobots.operators.sql import WherobotsRunOperator
+from airflow_providers_wherobots.operators.run import WherobotsRunOperator
 
 from wherobots.db.region import Region
 from wherobots.db.runtime import Runtime
@@ -92,7 +92,7 @@ The arguments for the `WherobotsRunOperator` constructor:
   until the run finishes. If `False`, the operator will not poll the logs, only track
   the status of the run.
 * `polling_interval`: The interval in seconds to poll the status of the run.
-  The default value is `30`.
+  The default value is `20`.
 * `timeout_seconds: int`: This parameter sets a maximum run time (in
   seconds) to prevent runaway processes. If the specified value exceeds the Max
   Workload Alive Hours, the timeout will be capped at the maximum permissible limit.
@@ -198,9 +198,12 @@ with DAG(
 
 ### Arguments
 
-* `region: Region`: The Wherobots Compute Region where the SQL query executions are hosted.
-  The values available can be found in `wherobots.db.region.Region`.
-* `runtime: Runtime`: The runtime dictates the size and amount of resources
-  powering the run. The default value is `Runtime.TINY`; see available values
-  [here](https://github.com/wherobots/wherobots-python-dbapi/blob/main/wherobots/db/runtime.py).
+* `region: str | Region`: The Wherobots Compute Region where the SQL query executions are hosted.
+  Accepts a `Region` enum value from `wherobots.db.region.Region` or a raw string.
+  Optional. When omitted, your organization's configured default region is used.
+* `runtime: str | Runtime`: The runtime dictates the size and amount of resources
+  powering the run. Accepts a `Runtime` enum value (see available values
+  [here](https://github.com/wherobots/wherobots-python-dbapi/blob/main/wherobots/db/runtime.py))
+  or a raw string. Optional. When omitted, your organization's configured
+  default runtime is used.
 * `sql: str`: The Spatial SQL query to execute.
