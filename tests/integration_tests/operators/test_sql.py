@@ -5,7 +5,6 @@ Test the operators in SQL module
 import datetime
 
 import pendulum
-import pytest
 from airflow import DAG
 from airflow.models import Connection
 from wherobots.db import Region, Runtime
@@ -19,7 +18,6 @@ TEST_DAG_ID = "test_sql_operator"
 TEST_TASK_ID = "sql_operator"
 
 
-@pytest.mark.usefixtures("clean_airflow_db")
 def test_prod_run_success(prod_conn: Connection, dag: DAG) -> None:
     operator = WherobotsSqlOperator(
         region=Region.AWS_US_WEST_2,

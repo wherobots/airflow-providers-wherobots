@@ -6,20 +6,17 @@ import datetime
 import itertools
 import logging
 import uuid
-from typing import Tuple, List
+from typing import Any, Dict, List, Tuple
 from unittest.mock import MagicMock
 
 import pendulum
 import pytest
 from airflow import DAG
-from airflow.models import DagRun, TaskInstance
-from airflow.utils.state import DagRunState, TaskInstanceState
-from airflow.utils.types import DagRunType
 from pytest_mock import MockerFixture
 from wherobots.db import Region
 
 from airflow_providers_wherobots.operators import run
-from airflow_providers_wherobots.operators.run import WherobotsRunOperator
+from airflow_providers_wherobots.operators.run import WherobotsRunOperator, XComKey
 from airflow_providers_wherobots.wherobots.models import (
     RunStatus,
     LogsResponse,
@@ -37,26 +34,25 @@ TEST_DAG_ID = "test_run_operator"
 TEST_TASK_ID = "run_operator"
 
 
-def build_ti(dag: DAG, task_id: str, start=DEFAULT_START, end=DEFAULT_END):
-    dag_run: DagRun = dag.create_dagrun(
-        state=DagRunState.RUNNING,
-        execution_date=start,
-        data_interval=(start, end),
-        start_date=start,
-        run_type=DagRunType.MANUAL,
-    )
-    ti: TaskInstance = dag_run.get_task_instance(task_id=task_id)
-    ti.task = dag.get_task(task_id=task_id)
-    return ti
+def execute_operator(
+    operator: WherobotsRunOperator, logical_date=DEFAULT_START
+) -> Dict[str, Any]:
+    """Render templates and execute the operator in-process, without a metadata DB.
 
-
-def execute_dag(dag: DAG, task_id: str, start=DEFAULT_START, end=DEFAULT_END):
-    ti = build_ti(dag, task_id, start=start, end=end)
-    ti.run(ignore_ti_state=True)
+    Uses only operator methods shared by Airflow 2 and the Airflow 3 Task SDK,
+    so the same tests run on every supported Airflow version.
+    """
+    context: Dict[str, Any] = {
+        "ds": logical_date.format("YYYY-MM-DD"),
+        "ts_nodash": logical_date.strftime("%Y%m%dT%H%M%S"),
+        "ti": MagicMock(),
+    }
+    operator.render_template_fields(context)
+    operator.execute(context)
+    return context
 
 
 class TestWherobotsRunOperator:
-    @pytest.mark.usefixtures("clean_airflow_db")
     def test_render_template(self, mocker: MockerFixture, dag: DAG):
         data_interval_start = pendulum.datetime(2021, 9, 13, tz="UTC")
         create_run: MagicMock = mocker.patch(
@@ -74,7 +70,7 @@ class TestWherobotsRunOperator:
             dag=dag,
         )
         assert operator.region == Region.AWS_US_WEST_2
-        execute_dag(dag, task_id=operator.task_id)
+        execute_operator(operator)
         assert create_run.call_count == 1
         rendered_payload = create_run.call_args.args[0]
         assert isinstance(rendered_payload, dict)
@@ -85,7 +81,6 @@ class TestWherobotsRunOperator:
         )
         assert rendered_payload["runPython"]["args"] == [expected_ds]
 
-    @pytest.mark.usefixtures("clean_airflow_db")
     def test_default_name(self, mocker: MockerFixture, dag: DAG):
         data_interval_start = pendulum.datetime(2021, 9, 13, tz="UTC")
         create_run: MagicMock = mocker.patch(
@@ -97,14 +92,13 @@ class TestWherobotsRunOperator:
             run_python={"uri": ""},
             dag=dag,
         )
-        execute_dag(dag, task_id=operator.task_id)
+        execute_operator(operator)
         rendered_payload = create_run.call_args.args[0]
         assert isinstance(rendered_payload, dict)
         assert rendered_payload["name"] == operator.default_run_name.replace(
             "{{ ts_nodash }}", data_interval_start.strftime("%Y%m%dT%H%M%S")
         )
 
-    @pytest.mark.usefixtures("clean_airflow_db")
     @pytest.mark.parametrize(
         "poll_logs,test_item",
         list(
@@ -116,25 +110,25 @@ class TestWherobotsRunOperator:
                             run_factory.build(status=RunStatus.RUNNING),
                             run_factory.build(status=RunStatus.FAILED),
                         ],
-                        TaskInstanceState.FAILED,
+                        False,
                     ),
                     (
                         [run_factory.build(status=RunStatus.CANCELLED)],
-                        TaskInstanceState.FAILED,
+                        False,
                     ),
                     (
                         [
                             run_factory.build(status=RunStatus.RUNNING),
                             run_factory.build(status=RunStatus.TIMED_OUT),
                         ],
-                        TaskInstanceState.FAILED,
+                        False,
                     ),
                     (
                         [
                             run_factory.build(status=RunStatus.RUNNING),
                             run_factory.build(status=RunStatus.COMPLETED),
                         ],
-                        TaskInstanceState.SUCCESS,
+                        True,
                     ),
                 ],
             )
@@ -145,9 +139,9 @@ class TestWherobotsRunOperator:
         mocker: MockerFixture,
         dag: DAG,
         poll_logs: bool,
-        test_item: Tuple[List[Run], TaskInstanceState],
+        test_item: Tuple[List[Run], bool],
     ):
-        get_run_results, task_state = test_item
+        get_run_results, succeeds = test_item
         mocked_create_run = mocker.patch(
             "airflow_providers_wherobots.hooks.rest_api.WherobotsRestAPIHook.create_run",
             return_value=run_factory.build(status=RunStatus.PENDING),
@@ -170,17 +164,15 @@ class TestWherobotsRunOperator:
             do_xcom_push=True,
             wait_post_run_logs_timeout_seconds=1,
         )
-        ti = build_ti(dag, task_id=operator.task_id)
-        run.POST_RUN_POLL_LOGS_INTERVAL = 0.1
-        try:
-            ti.run(ignore_ti_state=True)
-        except Exception as e:
-            assert isinstance(e, RuntimeError)
-        assert ti.state == task_state
-        # test xcom push
-        if task_state == TaskInstanceState.SUCCESS:
-            ti.xcom_push("key", "value")
-            assert ti.xcom_pull(key="run_id") == mocked_create_run.return_value.ext_id
+        mocker.patch.object(run, "POST_RUN_POLL_LOGS_INTERVAL", 0.1)
+        if succeeds:
+            context = execute_operator(operator)
+            context["ti"].xcom_push.assert_called_once_with(
+                key=XComKey.run_id, value=mocked_create_run.return_value.ext_id
+            )
+        else:
+            with pytest.raises(RuntimeError):
+                execute_operator(operator)
 
     def test_on_kill(
         self,
@@ -248,7 +240,6 @@ class TestWherobotsRunOperator:
         assert mocked_poll_method.call_count > 30
         operator._tail_post_run_logs(hook, test_run, 1)
 
-    @pytest.mark.usefixtures("clean_airflow_db")
     def test_runtime_version_in_payload(self, mocker: MockerFixture, dag: DAG):
         create_run: MagicMock = mocker.patch(
             "airflow_providers_wherobots.hooks.rest_api.WherobotsRestAPIHook.create_run",
@@ -262,7 +253,7 @@ class TestWherobotsRunOperator:
             version="1.2.3",
             dag=dag,
         )
-        execute_dag(dag, task_id=operator.task_id)
+        execute_operator(operator)
         rendered_payload = create_run.call_args.args[0]
         assert rendered_payload["version"] == "1.2.3"
 
