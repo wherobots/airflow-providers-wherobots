@@ -3,6 +3,18 @@
 Airflow providers to bring [Wherobots Cloud](https://www.wherobots.com)'s
 spatial compute to your data workflows and ETLs.
 
+## Compatibility
+
+| Apache Airflow | Supported | Notes |
+|---|---|---|
+| 3.0 and later | Yes | Operators and hooks build on the Task SDK (`airflow.sdk`). |
+| 2.10, 2.11 | Yes | Airflow 2 is end-of-life upstream; plan your move to Airflow 3. |
+| 2.9 and earlier | No | |
+
+Python 3.10 to 3.12. The package does not install Airflow for you: it uses the
+Airflow (and `apache-airflow-providers-common-sql`) already in your
+environment.
+
 ## Installation
 
 If you use [Poetry](https://python-poetry.org) in your project, add the
