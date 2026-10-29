@@ -8,13 +8,12 @@ from typing import Any, Optional, Dict, Union
 
 import requests
 from airflow.version import version as airflow_version
-from airflow.hooks.base import BaseHook
-from airflow.models import Connection
 from requests import PreparedRequest, Response
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
 from wherobots.db import Region
 
+from airflow_providers_wherobots._compat import BaseHook, Connection
 from airflow_providers_wherobots.client_attribution import (
     PROVIDER_VERSION,
     client_attribution_header,
