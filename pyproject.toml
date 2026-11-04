@@ -1,6 +1,6 @@
 [project]
 name = "airflow-providers-wherobots"
-version = "1.8.1"
+version = "1.9.0"
 description = "Airflow extension for communicating with Wherobots Cloud"
 authors = [{ name = "zongsi.zhang", email = "zongsi@wherobots.com" }]
 requires-python = ">=3.10, <3.13"
